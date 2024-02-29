@@ -20,7 +20,7 @@ type (
 	}
 )
 
-func NewConfig(configPath string) (*Config, error) {
+func NewConfig(configPath string) *Config {
 	cfg := &Config{}
 	err := godotenv.Load()
 	if err != nil {
@@ -34,5 +34,5 @@ func NewConfig(configPath string) (*Config, error) {
 	if err != nil {
 		slog.Fatal("error reading env %w", err)
 	}
-	return cfg, err
+	return cfg
 }

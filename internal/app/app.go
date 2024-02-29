@@ -3,15 +3,19 @@ package app
 import (
 	"auth/config"
 	"auth/internal/slogger"
+	"auth/pkg"
 	"github.com/gookit/slog"
-	"log"
 )
 
 func Run(configPath string) {
-	cfg, err := config.NewConfig(configPath)
-	if err != nil {
-		log.Fatalf("Config error: %s", err)
-	}
 	slogger.SetLogger()
-	slog.Info("cfg:", cfg)
+
+	slog.Info("init config")
+	cfg := config.NewConfig(configPath)
+	slog.Info("config ok")
+
+	slog.Info("connecting to postgres")
+	pg := postgres.New(cfg.URL)
+	defer pg.Pool.Close()
+	slog.Info("connect to postgres ok")
 }
