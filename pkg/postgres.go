@@ -26,3 +26,10 @@ func New(url string) *DB {
 	}
 	return db
 }
+
+func (db *DB) Close() {
+	if db.Pool != nil {
+		db.Pool.Close()
+	}
+
+}
