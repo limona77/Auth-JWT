@@ -6,7 +6,7 @@ import (
 	"auth/internal/repository"
 	"auth/internal/service"
 	"auth/internal/slogger"
-	"auth/pkg"
+	"auth/pkg/postgres"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gookit/slog"
 	"time"

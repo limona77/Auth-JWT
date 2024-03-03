@@ -1,6 +1,8 @@
 package repository
 
-import postgres "auth/pkg"
+import (
+	"auth/pkg/postgres"
+)
 
 type User interface {
 	CreateUser()
