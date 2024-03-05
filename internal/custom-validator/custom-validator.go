@@ -30,6 +30,8 @@ func (xV *XValidator) wrapValidationError(field string, tag string) error {
 		return fmt.Errorf("field %s is required", field)
 	case "email":
 		return fmt.Errorf("field %s must be a valid email address", field)
+	case "min":
+		return fmt.Errorf("field %s must have at least 5 characters", field)
 	default:
 		return fmt.Errorf("field %s is invalid", field)
 	}

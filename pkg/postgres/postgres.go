@@ -4,11 +4,13 @@ import (
 	"context"
 	"github.com/Masterminds/squirrel"
 	"github.com/gookit/slog"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PgxPool interface {
 	Close()
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 type DB struct {
 	Builder squirrel.StatementBuilderType

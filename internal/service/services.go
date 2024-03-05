@@ -1,9 +1,17 @@
 package service
 
-import "auth/internal/repository"
+import (
+	"auth/internal/repository"
+	"context"
+)
+
+type AuthParams struct {
+	Email    string
+	Password string
+}
 
 type Auth interface {
-	CreateUser()
+	CreateUser(context.Context, AuthParams) error
 }
 
 type Services struct {

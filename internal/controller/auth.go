@@ -1,6 +1,7 @@
 package controller
 
 import (
+	custom_errros "auth/internal/custom-errros"
 	custom_validator "auth/internal/custom-validator"
 	"auth/internal/service"
 	"fmt"
@@ -19,16 +20,16 @@ func newAuthRoutes(g fiber.Router, authService service.Auth) {
 }
 
 type UserCredentials struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	Email    string `json:"email" validate:"required,email,min=8"`
+	Password string `json:"password" validate:"required,min=5"`
 }
 
-func (aR *authRoutes) register(c *fiber.Ctx) error {
+func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.register"
 
 	var uC UserCredentials
 
-	err := c.BodyParser(&uC)
+	err := ctx.BodyParser(&uC)
 	if err != nil {
 		return err
 	}
@@ -37,9 +38,18 @@ func (aR *authRoutes) register(c *fiber.Ctx) error {
 
 	err = v.Validate(uC)
 	if err != nil {
-		slog.Errorf(fmt.Errorf(path+".Validate, error: {%w}", err).Error())
-		wrapHttpError(c, fiber.StatusBadRequest, err.Error())
-	}
 
+		slog.Errorf(fmt.Errorf(path+".Validate, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
+	}
+	err = aR.authService.CreateUser(ctx.Context(), service.AuthParams{uC.Email, uC.Password})
+	if err != nil {
+		if err == custom_errros.ErrAlreadyExists {
+			slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
+			return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
+		}
+		slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
+	}
 	return nil
 }

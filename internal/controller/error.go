@@ -5,13 +5,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func wrapHttpError(c *fiber.Ctx, errStatus int, message string) {
+func wrapHttpError(ctx *fiber.Ctx, code int, message string) error {
 	err := errors.New(message)
-	_, ok := err.(*fiber.Error)
-	if !ok {
-		report := fiber.NewError(errStatus, err.Error())
-		_ = c.JSON(errStatus, report.Error())
-	}
-	_ = c.Status(errStatus).SendString(errors.New(message).Error())
 
+	var e *fiber.Error
+	if errors.As(err, &e) {
+		code = e.Code
+		return ctx.Status(code).SendString(message)
+	}
+
+	return ctx.Status(code).SendString(message)
 }
