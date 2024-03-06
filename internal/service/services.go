@@ -12,6 +12,7 @@ type AuthParams struct {
 
 type Auth interface {
 	CreateUser(context.Context, AuthParams) error
+	GenerateTokens(context.Context, AuthParams) (Tokens, error)
 }
 
 type Services struct {
@@ -19,10 +20,12 @@ type Services struct {
 }
 
 type ServicesDeps struct {
-	Repository *repository.Repositories
+	Repository       *repository.Repositories
+	SecretKeyAccess  []byte
+	SecretKeyRefresh []byte
 }
 
 func NewServices(deps ServicesDeps) *Services {
-	return &Services{Auth: NewAuthService(deps.Repository.User)}
+	return &Services{Auth: NewAuthService(deps.Repository.User, deps.SecretKeyAccess, deps.SecretKeyRefresh)}
 
 }

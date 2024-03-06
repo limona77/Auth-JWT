@@ -11,12 +11,17 @@ type (
 	Config struct {
 		HTTP `yaml:"http"`
 		PG
+		JWT
 	}
 	HTTP struct {
 		Port string `yaml:"port"`
 	}
 	PG struct {
 		URL string ` env:"PG_URL_LOCALHOST"`
+	}
+	JWT struct {
+		SecretKeyAccess  []byte `env-required:"true" env:"JWT_ACCESS_SECRET"`
+		SecretKeyRefresh []byte `env-required:"true" env:"JWT_REFRESH_SECRET"`
 	}
 )
 

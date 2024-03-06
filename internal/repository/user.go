@@ -1,12 +1,13 @@
 package repository
 
 import (
-	custom_errros "auth/internal/custom-errros"
+	custom_errros "auth/internal/custom-errors"
 	"auth/internal/model"
 	"auth/pkg/postgres"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -43,4 +44,29 @@ func (uR *UserRepository) CreateUser(ctx context.Context, user model.User) (int,
 	}
 
 	return id, nil
+}
+func (uR *UserRepository) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
+	path := "internal.repository.user.GetUserByEmail"
+	sql, args, err := uR.Builder.Select("id,email,password").
+		From("public.user").
+		Where("email = ?", email).
+		ToSql()
+	if err != nil {
+		return model.User{}, fmt.Errorf(path+".ToSql, error: {%w}", err)
+	}
+
+	var user model.User
+	err = uR.Pool.QueryRow(ctx, sql, args...).
+		Scan(&user.ID, &user.Email, &user.Password)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if ok := errors.As(err, &pgErr); ok {
+			return model.User{}, err
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.User{}, custom_errros.ErrUserNotFound
+		}
+		return model.User{}, fmt.Errorf(path+".QueryRow, error: {%w}", err)
+	}
+	return user, nil
 }

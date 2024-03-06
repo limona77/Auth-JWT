@@ -1,7 +1,7 @@
 package controller
 
 import (
-	custom_errros "auth/internal/custom-errros"
+	"auth/internal/custom-errors"
 	custom_validator "auth/internal/custom-validator"
 	"auth/internal/service"
 	"fmt"
@@ -42,14 +42,34 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".Validate, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
 	}
-	err = aR.authService.CreateUser(ctx.Context(), service.AuthParams{uC.Email, uC.Password})
+	authParams := service.AuthParams{uC.Email, uC.Password}
+
+	err = aR.authService.CreateUser(ctx.Context(), authParams)
 	if err != nil {
-		if err == custom_errros.ErrAlreadyExists {
+		if err == custom_errors.ErrAlreadyExists {
 			slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
 			return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
 		}
 		slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
+	}
+
+	tokens, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
+	if err != nil {
+		return err
+	}
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "refreshToken",
+		Value:    tokens.RefreshToken,
+		MaxAge:   30 * 24 * 60 * 60 * 1000,
+		HTTPOnly: true,
+	})
+
+	err = ctx.JSON(fiber.Map{"refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken})
+	if err != nil {
+		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
+
 	}
 	return nil
 }

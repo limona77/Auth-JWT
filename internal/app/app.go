@@ -33,7 +33,12 @@ func Run(configPath string) {
 	repositories := repository.NewRepositories(db)
 
 	slog.Info("init services")
-	deps := service.ServicesDeps{Repository: repositories}
+	deps := service.ServicesDeps{
+		Repository:       repositories,
+		SecretKeyAccess:  cfg.SecretKeyAccess,
+		SecretKeyRefresh: cfg.SecretKeyRefresh,
+	}
+
 	services := service.NewServices(deps)
 
 	fiberConfig := fiber.Config{

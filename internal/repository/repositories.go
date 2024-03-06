@@ -8,6 +8,7 @@ import (
 
 type User interface {
 	CreateUser(context.Context, model.User) (int, error)
+	GetUserByEmail(ctx context.Context, email string) (model.User, error)
 }
 
 type Repositories struct {
