@@ -66,6 +66,7 @@ func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (T
 	}
 
 	claims.Exp = time.Now().Add(time.Hour * 30).Unix()
+	claims.Key = aS.SecretKeyRefresh
 	tokenR := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	refreshToken, err := tokenR.SignedString(claims.Key)
 	if err != nil {
