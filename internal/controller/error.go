@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+
 	"github.com/gofiber/fiber/v2"
 )
 

@@ -2,20 +2,20 @@ package custom_validator
 
 import (
 	"fmt"
+
 	"github.com/go-playground/validator/v10"
 )
 
 type (
 	XValidator struct {
-		validator *validator.Validate
+		Validator *validator.Validate
 	}
 )
 
-var validate = validator.New()
+var Validate = validator.New()
 
 func (xV *XValidator) Validate(data interface{}) error {
-
-	err := validate.Struct(data)
+	err := xV.Validator.Struct(data)
 	if err != nil {
 		fieldErr := err.(validator.ValidationErrors)[0]
 
@@ -24,6 +24,7 @@ func (xV *XValidator) Validate(data interface{}) error {
 
 	return nil
 }
+
 func (xV *XValidator) wrapValidationError(field string, tag string) error {
 	switch tag {
 	case "required":

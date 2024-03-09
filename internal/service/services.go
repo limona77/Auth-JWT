@@ -27,5 +27,4 @@ type ServicesDeps struct {
 
 func NewServices(deps ServicesDeps) *Services {
 	return &Services{Auth: NewAuthService(deps.Repository.User, deps.SecretKeyAccess, deps.SecretKeyRefresh)}
-
 }

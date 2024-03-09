@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/gookit/slog"
 	"github.com/jackc/pgx/v5"
@@ -33,5 +34,4 @@ func (db *DB) Close() {
 	if db.Pool != nil {
 		db.Pool.Close()
 	}
-
 }

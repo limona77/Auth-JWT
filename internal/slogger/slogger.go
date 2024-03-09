@@ -7,5 +7,4 @@ func SetLogger() {
 		f := logger.Formatter.(*slog.TextFormatter)
 		f.EnableColor = true
 	})
-
 }

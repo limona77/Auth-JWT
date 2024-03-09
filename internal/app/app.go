@@ -7,9 +7,10 @@ import (
 	"auth/internal/service"
 	"auth/internal/slogger"
 	"auth/pkg/postgres"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gookit/slog"
-	"time"
 )
 
 const (
@@ -51,5 +52,4 @@ func Run(configPath string) {
 
 	slog.Info("starting fiber server")
 	slog.Fatal(app.Listen(":" + cfg.Port))
-
 }

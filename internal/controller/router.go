@@ -2,6 +2,7 @@ package controller
 
 import (
 	"auth/internal/service"
+
 	"github.com/gofiber/fiber/v2"
 )
 

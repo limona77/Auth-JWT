@@ -1,10 +1,11 @@
 package config
 
 import (
+	"path"
+
 	"github.com/gookit/slog"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
-	"path"
 )
 
 type (

@@ -4,7 +4,9 @@ import (
 	"auth/internal/custom-errors"
 	custom_validator "auth/internal/custom-validator"
 	"auth/internal/service"
+	"errors"
 	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gookit/slog"
 )
@@ -16,7 +18,6 @@ type authRoutes struct {
 func newAuthRoutes(g fiber.Router, authService service.Auth) {
 	aR := &authRoutes{authService: authService}
 	g.Post("/register", aR.register)
-
 }
 
 type UserCredentials struct {
@@ -34,7 +35,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	v := &custom_validator.XValidator{}
+	v := &custom_validator.XValidator{Validator: custom_validator.Validate}
 
 	err = v.Validate(uC)
 	if err != nil {
@@ -42,11 +43,11 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".Validate, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
 	}
-	authParams := service.AuthParams{uC.Email, uC.Password}
+	authParams := service.AuthParams{Email: uC.Email, Password: uC.Password}
 
 	err = aR.authService.CreateUser(ctx.Context(), authParams)
 	if err != nil {
-		if err == custom_errors.ErrAlreadyExists {
+		if errors.Is(err, custom_errors.ErrAlreadyExists) {
 			slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
 			return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
 		}

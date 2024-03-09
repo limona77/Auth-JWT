@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -45,6 +46,7 @@ func (uR *UserRepository) CreateUser(ctx context.Context, user model.User) (int,
 
 	return id, nil
 }
+
 func (uR *UserRepository) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
 	path := "internal.repository.user.GetUserByEmail"
 	sql, args, err := uR.Builder.Select("id,email,password").
