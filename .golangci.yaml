@@ -3,6 +3,14 @@ run:
 linters:
   disable-all: true
   enable:
+    - whitespace
+    - goconst
+    - gochecknoinits
+    - gocheckcompilerdirectives
+    - containedctx
+    - errname
+    - ineffassign
+    - gosimple
     - gofumpt
     - unused
     - govet

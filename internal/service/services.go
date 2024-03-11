@@ -1,6 +1,7 @@
 package service
 
 import (
+	"auth/internal/model"
 	"auth/internal/repository"
 	"context"
 )
@@ -11,7 +12,7 @@ type AuthParams struct {
 }
 
 type Auth interface {
-	CreateUser(context.Context, AuthParams) error
+	CreateUser(context.Context, AuthParams) (model.User, error)
 	GenerateTokens(context.Context, AuthParams) (Tokens, error)
 }
 

@@ -6,8 +6,9 @@ import (
 	"auth/internal/repository"
 	"context"
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Tokens struct {
@@ -17,7 +18,7 @@ type Tokens struct {
 
 type TokenClaims struct {
 	Email string `json:"email"`
-	ID    uint32 `json:"ID"`
+	ID    int    `json:"ID"`
 	Exp   int64  `json:"exp"`
 	Key   []byte `json:"key"`
 	jwt.RegisteredClaims
@@ -33,18 +34,18 @@ func NewAuthService(aR repository.User, secretKeyAccess, secretKeyRefresh []byte
 	return &AuthService{aR, secretKeyAccess, secretKeyRefresh}
 }
 
-func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) error {
+func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) (model.User, error) {
 	path := "internal.service.auth.CreateUser"
 	password, err := hashPassword.HashPassword(params.Password)
 	if err != nil {
-		return fmt.Errorf(path+".HashPassword, error: {%w}", err)
+		return model.User{}, fmt.Errorf(path+".HashPassword, error: {%w}", err)
 	}
 
-	_, err = aS.authRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
+	id, err := aS.authRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
 	if err != nil {
-		return fmt.Errorf(path+".CreateUser, error: {%w}", err)
+		return model.User{}, fmt.Errorf(path+".CreateUser, error: {%w}", err)
 	}
-	return nil
+	return model.User{ID: id, Email: params.Email}, nil
 }
 
 func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (Tokens, error) {
