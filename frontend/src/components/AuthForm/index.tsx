@@ -1,5 +1,8 @@
 import { useForm } from "@mantine/form";
 import { TextInput, Button, Box, PasswordInput } from "@mantine/core";
+
+import { AuthService } from "../../services/auth";
+
 const AuthForm = () => {
   const form = useForm({
     initialValues: { email: "", password: "" },
@@ -9,6 +12,15 @@ const AuthForm = () => {
         value.length < 5 ? "Длина пароля должна быть минимум 5 символов" : null,
     },
   });
+
+  const fetchRegister = async (email: string, password: string) => {
+    try {
+      await AuthService.register(email, password);
+      alert("Вы зарегистрированы!");
+    } catch (err) {
+      alert(err);
+    }
+  };
   return (
     <Box
       style={{
@@ -16,7 +28,6 @@ const AuthForm = () => {
         justifyContent: "center",
         height: "100vh",
         alignItems: "center",
-        // backgroundColor:'orange'
       }}
     >
       <Box
@@ -24,12 +35,11 @@ const AuthForm = () => {
           minWidth: 140,
           width: 340,
           maxHeight: 240,
-          // backgroundColor:'red'
         }}
       >
         <form
           onSubmit={form.onSubmit(() => {
-            return;
+            fetchRegister(form.values.email, form.values.password);
           })}
         >
           <TextInput

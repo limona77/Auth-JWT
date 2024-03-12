@@ -7,6 +7,7 @@ import (
 	"auth/internal/service"
 	"auth/internal/slogger"
 	"auth/pkg/postgres"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -47,7 +48,7 @@ func Run(configPath string) {
 		WriteTimeout: WriteTimeout,
 	}
 	app := fiber.New(fiberConfig)
-
+	app.Use(cors.New())
 	controller.NewRouter(app, services)
 
 	slog.Info("starting fiber server")

@@ -1,3 +1,16 @@
+import { AxiosResponse } from "axios";
+
+import { AuthResponse } from "../../models/auth";
+import { axiosInstance } from "../../axios";
+
 export class AuthService {
-  static async register() {}
+  static async register(
+    email: string,
+    password: string,
+  ): Promise<AxiosResponse<AuthResponse>> {
+    return axiosInstance.post("auth/register", {
+      email,
+      password,
+    });
+  }
 }
