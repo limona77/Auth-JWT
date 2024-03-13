@@ -1,10 +1,12 @@
 package service
 
 import (
+	custom_errros "auth/internal/custom-errors"
 	"auth/internal/hashPassword"
 	"auth/internal/model"
 	"auth/internal/repository"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -43,6 +45,9 @@ func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) (model
 
 	id, err := aS.authRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
 	if err != nil {
+		if errors.Is(err, custom_errros.ErrAlreadyExists) {
+			return model.User{}, custom_errros.ErrAlreadyExists
+		}
 		return model.User{}, fmt.Errorf(path+".CreateUser, error: {%w}", err)
 	}
 	return model.User{ID: id, Email: params.Email}, nil

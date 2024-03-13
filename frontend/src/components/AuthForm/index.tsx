@@ -1,8 +1,9 @@
 import { useForm } from "@mantine/form";
 import { TextInput, Button, Box, PasswordInput } from "@mantine/core";
 
-import { AuthService } from "../../services/auth";
+import axios from "axios";
 
+import { AuthService } from "../../services/auth";
 const AuthForm = () => {
   const form = useForm({
     initialValues: { email: "", password: "" },
@@ -15,10 +16,15 @@ const AuthForm = () => {
 
   const fetchRegister = async (email: string, password: string) => {
     try {
-      await AuthService.register(email, password);
+      const response = await AuthService.register(email, password);
+      localStorage.setItem("token", response.data.accessToken);
       alert("Вы зарегистрированы!");
     } catch (err) {
-      alert(err);
+      if (axios.isAxiosError(err)) {
+        alert(err.response?.data?.message);
+      } else if (err instanceof Error) {
+        alert(err.message);
+      }
     }
   };
   return (

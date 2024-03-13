@@ -2,7 +2,6 @@ package controller
 
 import (
 	"errors"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -15,5 +14,5 @@ func wrapHttpError(ctx *fiber.Ctx, code int, message string) error {
 		return ctx.Status(code).SendString(message)
 	}
 
-	return ctx.Status(code).SendString(message)
+	return httpResponse(ctx, code, fiber.Map{"message": message})
 }

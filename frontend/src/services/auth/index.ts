@@ -8,7 +8,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<AxiosResponse<AuthResponse>> {
-    return axiosInstance.post("auth/register", {
+    return axiosInstance.post<AuthResponse>("auth/register", {
       email,
       password,
     });

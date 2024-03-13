@@ -67,7 +67,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	})
 
 	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
-	err = httpResponse(ctx, resp)
+	err = httpResponse(ctx, 200, resp)
 	if err != nil {
 		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")

@@ -15,3 +15,8 @@ linters:
     - unused
     - govet
     - errcheck
+    - lll
+linters-settings:
+  lll:
+    line-length: 120
+    tab-width: 2
