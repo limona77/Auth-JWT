@@ -11,6 +11,7 @@ type AuthParams struct {
 	Password string
 }
 
+//go:generate mockgen -source=services.go -destination=mocks/mock.go
 type Auth interface {
 	CreateUser(context.Context, AuthParams) (model.User, error)
 	GenerateTokens(context.Context, AuthParams) (Tokens, error)

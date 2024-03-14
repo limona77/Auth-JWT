@@ -32,6 +32,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 
 	err := ctx.BodyParser(&uC)
 	if err != nil {
+		fmt.Println("fafasfas", err)
 		return err
 	}
 
