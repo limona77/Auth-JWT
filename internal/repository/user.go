@@ -20,31 +20,31 @@ func NewUserRepository(db *postgres.DB) *UserRepository {
 	return &UserRepository{db}
 }
 
-func (uR *UserRepository) CreateUser(ctx context.Context, user model.User) (int, error) {
+func (uR *UserRepository) CreateUser(ctx context.Context, user model.User) (model.User, error) {
 	path := "internal.repository.user.CreateUser"
 	sql, args, err := uR.Builder.Insert("public.user").
 		Into("public.user").
 		Columns("email", "password").
 		Values(user.Email, user.Password).
-		Suffix("RETURNING id").
+		Suffix("RETURNING id,email").
 		ToSql()
 	if err != nil {
-		return 0, fmt.Errorf(path+".ToSql, error: {%w}", err)
+		return model.User{}, fmt.Errorf(path+".ToSql, error: {%w}", err)
 	}
 
-	var id int
-	err = uR.Pool.QueryRow(ctx, sql, args...).Scan(&id)
+	var u model.User
+	err = uR.Pool.QueryRow(ctx, sql, args...).Scan(&u.ID, &u.Email)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if ok := errors.As(err, &pgErr); ok {
 			if pgErr.Code == "23505" {
-				return 0, custom_errros.ErrAlreadyExists
+				return model.User{}, custom_errros.ErrAlreadyExists
 			}
 		}
-		return 0, fmt.Errorf(path+".QueryRow, error: {%w}", err)
+		return u, fmt.Errorf(path+".QueryRow, error: {%w}", err)
 	}
 
-	return id, nil
+	return u, nil
 }
 
 func (uR *UserRepository) GetUserByEmail(ctx context.Context, email string) (model.User, error) {

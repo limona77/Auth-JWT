@@ -19,20 +19,20 @@ func (xV *XValidator) Validate(data interface{}) error {
 	if err != nil {
 		fieldErr := err.(validator.ValidationErrors)[0]
 
-		return xV.wrapValidationError(fieldErr.Field(), fieldErr.Tag())
+		return xV.wrapValidationError(fieldErr.Field(), fieldErr.Tag(), fieldErr.Param())
 	}
 
 	return nil
 }
 
-func (xV *XValidator) wrapValidationError(field string, tag string) error {
+func (xV *XValidator) wrapValidationError(field string, tag string, param string) error {
 	switch tag {
 	case "required":
 		return fmt.Errorf("field %s is required", field)
 	case "email":
 		return fmt.Errorf("field %s must be a valid email address", field)
 	case "min":
-		return fmt.Errorf("field %s must have at least 5 characters", field)
+		return fmt.Errorf("field %s must have at least %s characters", field, param)
 	default:
 		return fmt.Errorf("field %s is invalid", field)
 	}

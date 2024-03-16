@@ -2,7 +2,7 @@ package controller
 
 import (
 	"auth/internal/custom-errors"
-	custom_validator "auth/internal/custom-validator"
+	custom_validator "auth/internal/custom-validatot"
 	"auth/internal/service"
 	"errors"
 	"fmt"
@@ -32,7 +32,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 
 	err := ctx.BodyParser(&uC)
 	if err != nil {
-		fmt.Println("fafasfas", err)
+
 		return err
 	}
 
@@ -54,7 +54,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
-
+	fmt.Println("jopa", user)
 	tokens, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
 	if err != nil {
 		return err

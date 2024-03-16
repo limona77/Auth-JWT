@@ -43,14 +43,14 @@ func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) (model
 		return model.User{}, fmt.Errorf(path+".HashPassword, error: {%w}", err)
 	}
 
-	id, err := aS.authRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
+	user, err := aS.authRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
 	if err != nil {
 		if errors.Is(err, custom_errros.ErrAlreadyExists) {
 			return model.User{}, custom_errros.ErrAlreadyExists
 		}
 		return model.User{}, fmt.Errorf(path+".CreateUser, error: {%w}", err)
 	}
-	return model.User{ID: id, Email: params.Email}, nil
+	return user, nil
 }
 
 func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (Tokens, error) {
