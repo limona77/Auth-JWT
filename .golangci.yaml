@@ -20,3 +20,9 @@ linters-settings:
   lll:
     line-length: 120
     tab-width: 2
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - lll
+        - containedctx

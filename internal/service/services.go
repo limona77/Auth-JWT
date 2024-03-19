@@ -15,6 +15,8 @@ type AuthParams struct {
 type Auth interface {
 	CreateUser(context.Context, AuthParams) (model.User, error)
 	GenerateTokens(context.Context, AuthParams) (Tokens, error)
+	GetUserByEmail(context.Context, AuthParams) (model.User, error)
+	ParseToken(string) error
 }
 
 type Services struct {

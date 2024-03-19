@@ -53,7 +53,23 @@ func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) (model
 	return user, nil
 }
 
+func (aS *AuthService) GetUserByEmail(ctx context.Context, params AuthParams) (model.User, error) {
+	path := "internal.service.auth.GetUserByEmail"
+	user, err := aS.authRepository.GetUserByEmail(ctx, params.Email)
+	if err != nil {
+		return model.User{}, fmt.Errorf(path+"GetUserByEmail, error: {%w}", err)
+	}
+
+	ok := hashPassword.CheckPasswordHash(params.Password, user.Password)
+	if !ok {
+		return model.User{}, fmt.Errorf(path+"CheckPasswordHash, error: {%w}", err)
+	}
+	return user, nil
+}
+
 func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (Tokens, error) {
+	path := "internal.service.auth.GenerateTokens"
+
 	user, err := aS.authRepository.GetUserByEmail(ctx, params.Email)
 	if err != nil {
 		return Tokens{}, err
@@ -68,7 +84,7 @@ func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (T
 	tokenA := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	accessToken, err := tokenA.SignedString(claims.Key)
 	if err != nil {
-		return Tokens{}, err
+		return Tokens{}, fmt.Errorf(path+".tokenA.SignedString, error: {%w}", err)
 	}
 
 	claims.Exp = time.Now().Add(time.Hour * 30).Unix()
@@ -76,10 +92,28 @@ func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (T
 	tokenR := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	refreshToken, err := tokenR.SignedString(claims.Key)
 	if err != nil {
-		return Tokens{}, err
+		return Tokens{}, fmt.Errorf(path+".tokenR.SignedString, error: {%w}", err)
 	}
 	return Tokens{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+func (aS *AuthService) ParseToken(token string) error {
+	path := "internal.service.auth.ParseToken"
+
+	var tokenClaims TokenClaims
+
+	t, err := jwt.ParseWithClaims(token, &tokenClaims, func(token *jwt.Token) (interface{}, error) {
+		return tokenClaims.Key, nil
+	})
+	if err != nil {
+		return fmt.Errorf(path+"ParseWithClaims, error: {%w}", err)
+	}
+
+	if !t.Valid {
+		return fmt.Errorf(path+"Valid, error: {%w}", err)
+	}
+	return nil
 }

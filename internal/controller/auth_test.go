@@ -6,13 +6,14 @@ import (
 	mock_service "auth/internal/service/mocks"
 	"context"
 	"fmt"
-	"github.com/go-playground/assert/v2"
-	"github.com/gofiber/fiber/v2"
-	"github.com/golang/mock/gomock"
 	"io"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/go-playground/assert/v2"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang/mock/gomock"
 )
 
 func TestRegister(t *testing.T) {
@@ -92,38 +93,36 @@ func TestRegister(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			//init service mock
+			// init service mock
 			auth := mock_service.NewMockAuth(c)
 			tc.mockBehavior(auth, tc.args)
 
-			//init service
+			// init service
 			services := service.Services{Auth: auth}
 
-			//init test server
+			// init test server
 			f := fiber.New()
 			g := f.Group("/auth")
 			newAuthRoutes(g, services.Auth)
 
-			//init request
+			// init request
 			req := httptest.NewRequest("POST", "/auth/register", strings.NewReader(tc.inputBody))
 			req.Header.Set("Content-Type", "application/json")
 			resp, err := f.Test(req)
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Println(resp)
+
 			// check response
 			if resp != nil {
 				body, err := io.ReadAll(resp.Body)
 				if err != nil {
 					fmt.Println("Error reading response body:", err)
 				}
-				//fmt.Println("wanted:", tc.wantRequestBody)
-				//fmt.Println("returned:", string(body))
+
 				assert.Equal(t, tc.wantStatus, resp.StatusCode)
 				assert.Equal(t, tc.wantRequestBody, string(body))
 			}
-			return
 		})
 	}
 }

@@ -18,6 +18,7 @@ type authRoutes struct {
 func newAuthRoutes(g fiber.Router, authService service.Auth) {
 	aR := &authRoutes{authService: authService}
 	g.Post("/register", aR.register)
+	g.Post("/login", aR.login)
 }
 
 type UserCredentials struct {
@@ -32,8 +33,8 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 
 	err := ctx.BodyParser(&uC)
 	if err != nil {
-
-		return err
+		slog.Errorf(fmt.Errorf(path+".BodyParser, error: {%w}", err).Error())
+		return wrapHttpError(ctx, 500, "internal error")
 	}
 
 	v := &custom_validator.XValidator{Validator: custom_validator.Validate}
@@ -49,12 +50,11 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrAlreadyExists) {
 			slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
-			return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
+			return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrAlreadyExists.Error())
 		}
 		slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
-	fmt.Println("jopa", user)
 	tokens, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
 	if err != nil {
 		return err
@@ -73,5 +73,28 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
+	return nil
+}
+
+func (aR *authRoutes) login(ctx *fiber.Ctx) error {
+	path := "internal.controller.auth.login"
+
+	var uC UserCredentials
+	err := ctx.BodyParser(&uC)
+	if err != nil {
+		return wrapHttpError(ctx, 500, "internal error")
+	}
+
+	authParams := service.AuthParams{Email: uC.Email, Password: uC.Password}
+	_, err = aR.authService.GetUserByEmail(ctx.Context(), authParams)
+	if err != nil {
+		if errors.Is(err, custom_errors.ErrUserNotFound) {
+			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
+			return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrUserNotFound.Error())
+		}
+		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
+	}
+
 	return nil
 }

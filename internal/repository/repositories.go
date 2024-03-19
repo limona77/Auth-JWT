@@ -11,8 +11,12 @@ type User interface {
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
 }
 
+//	type Token interface {
+//		SaveToken(ctx context.Context, token string) error
+//	}
 type Repositories struct {
 	User
+	//Token
 }
 
 func NewRepositories(db *postgres.DB) *Repositories {
