@@ -27,13 +27,14 @@ type TokenClaims struct {
 }
 
 type AuthService struct {
-	authRepository   repository.User
+	userRepository   repository.User
+	tokenRepository  repository.Token
 	SecretKeyAccess  []byte
 	SecretKeyRefresh []byte
 }
 
-func NewAuthService(aR repository.User, secretKeyAccess, secretKeyRefresh []byte) *AuthService {
-	return &AuthService{aR, secretKeyAccess, secretKeyRefresh}
+func NewAuthService(uR repository.User, tR repository.Token, secretKeyAccess, secretKeyRefresh []byte) *AuthService {
+	return &AuthService{uR, tR, secretKeyAccess, secretKeyRefresh}
 }
 
 func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) (model.User, error) {
@@ -43,7 +44,7 @@ func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) (model
 		return model.User{}, fmt.Errorf(path+".HashPassword, error: {%w}", err)
 	}
 
-	user, err := aS.authRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
+	user, err := aS.userRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
 	if err != nil {
 		if errors.Is(err, custom_errros.ErrAlreadyExists) {
 			return model.User{}, custom_errros.ErrAlreadyExists
@@ -55,22 +56,23 @@ func (aS *AuthService) CreateUser(ctx context.Context, params AuthParams) (model
 
 func (aS *AuthService) GetUserByEmail(ctx context.Context, params AuthParams) (model.User, error) {
 	path := "internal.service.auth.GetUserByEmail"
-	user, err := aS.authRepository.GetUserByEmail(ctx, params.Email)
+	user, err := aS.userRepository.GetUserByEmail(ctx, params.Email)
 	if err != nil {
-		return model.User{}, fmt.Errorf(path+"GetUserByEmail, error: {%w}", err)
+		return model.User{}, fmt.Errorf(path+".GetUserByEmail, error: {%w}", err)
 	}
 
 	ok := hashPassword.CheckPasswordHash(params.Password, user.Password)
 	if !ok {
-		return model.User{}, fmt.Errorf(path+"CheckPasswordHash, error: {%w}", err)
+		return model.User{}, fmt.Errorf(path+".CheckPasswordHash, error: {%w}", err)
 	}
+	user.Password = ""
 	return user, nil
 }
 
 func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (Tokens, error) {
 	path := "internal.service.auth.GenerateTokens"
 
-	user, err := aS.authRepository.GetUserByEmail(ctx, params.Email)
+	user, err := aS.userRepository.GetUserByEmail(ctx, params.Email)
 	if err != nil {
 		return Tokens{}, err
 	}
@@ -109,11 +111,20 @@ func (aS *AuthService) ParseToken(token string) error {
 		return tokenClaims.Key, nil
 	})
 	if err != nil {
-		return fmt.Errorf(path+"ParseWithClaims, error: {%w}", err)
+		return fmt.Errorf(path+".ParseWithClaims, error: {%w}", err)
 	}
 
 	if !t.Valid {
-		return fmt.Errorf(path+"Valid, error: {%w}", err)
+		return fmt.Errorf(path+".Valid, error: {%w}", err)
 	}
 	return nil
+}
+func (aS *AuthService) SaveToken(ctx context.Context, token model.Token) (model.Token, error) {
+	path := "internal.service.auth.SaveToken"
+
+	t, err := aS.tokenRepository.SaveToken(ctx, token)
+	if err != nil {
+		return model.Token{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)
+	}
+	return t, nil
 }

@@ -22,8 +22,8 @@ func NewUserRepository(db *postgres.DB) *UserRepository {
 
 func (uR *UserRepository) CreateUser(ctx context.Context, user model.User) (model.User, error) {
 	path := "internal.repository.user.CreateUser"
-	sql, args, err := uR.Builder.Insert("public.user").
-		Into("public.user").
+	sql, args, err := uR.Builder.
+		Insert("public.users").
 		Columns("email", "password").
 		Values(user.Email, user.Password).
 		Suffix("RETURNING id,email").
@@ -31,9 +31,9 @@ func (uR *UserRepository) CreateUser(ctx context.Context, user model.User) (mode
 	if err != nil {
 		return model.User{}, fmt.Errorf(path+".ToSql, error: {%w}", err)
 	}
-
 	var u model.User
-	err = uR.Pool.QueryRow(ctx, sql, args...).Scan(&u.ID, &u.Email)
+	err = uR.Pool.QueryRow(ctx, sql, args...).
+		Scan(&u.ID, &u.Email)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if ok := errors.As(err, &pgErr); ok {
@@ -49,8 +49,9 @@ func (uR *UserRepository) CreateUser(ctx context.Context, user model.User) (mode
 
 func (uR *UserRepository) GetUserByEmail(ctx context.Context, email string) (model.User, error) {
 	path := "internal.repository.user.GetUserByEmail"
-	sql, args, err := uR.Builder.Select("id,email,password").
-		From("public.user").
+	sql, args, err := uR.Builder.
+		Select("id,email,password").
+		From("public.users").
 		Where("email = ?", email).
 		ToSql()
 	if err != nil {

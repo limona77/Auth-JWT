@@ -8,17 +8,19 @@ import (
 
 type User interface {
 	CreateUser(context.Context, model.User) (model.User, error)
-	GetUserByEmail(ctx context.Context, email string) (model.User, error)
+	GetUserByEmail(context.Context, string) (model.User, error)
 }
 
-//	type Token interface {
-//		SaveToken(ctx context.Context, token string) error
-//	}
+type Token interface {
+	SaveToken(context.Context, model.Token) (model.Token, error)
+	getTokenByUserID(ctx context.Context, userID int) (model.Token, error)
+	deleteTokenByUserID(ctx context.Context, userID int) (int, error)
+}
 type Repositories struct {
 	User
-	//Token
+	Token
 }
 
 func NewRepositories(db *postgres.DB) *Repositories {
-	return &Repositories{NewUserRepository(db)}
+	return &Repositories{NewUserRepository(db), NewTokenRepository(db)}
 }
