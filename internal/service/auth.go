@@ -63,7 +63,7 @@ func (aS *AuthService) GetUserByEmail(ctx context.Context, params AuthParams) (m
 
 	ok := hashPassword.CheckPasswordHash(params.Password, user.Password)
 	if !ok {
-		return model.User{}, fmt.Errorf(path+".CheckPasswordHash, error: {%w}", err)
+		return model.User{}, fmt.Errorf(path+".CheckPasswordHash, error: {%w}", custom_errros.ErrWrongCredetianls)
 	}
 	user.Password = ""
 	return user, nil

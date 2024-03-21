@@ -13,8 +13,6 @@ type User interface {
 
 type Token interface {
 	SaveToken(context.Context, model.Token) (model.Token, error)
-	getTokenByUserID(ctx context.Context, userID int) (model.Token, error)
-	deleteTokenByUserID(ctx context.Context, userID int) (int, error)
 }
 type Repositories struct {
 	User

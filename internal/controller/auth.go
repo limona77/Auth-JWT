@@ -48,7 +48,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	authParams := service.AuthParams{Email: uC.Email, Password: uC.Password}
 
 	user, err := aR.authService.CreateUser(ctx.Context(), authParams)
-	fmt.Println("dddd", err)
+
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrAlreadyExists) {
 			slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
@@ -95,13 +95,23 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 	if err != nil {
 		return wrapHttpError(ctx, 500, "internal error")
 	}
+	v := &custom_validator.XValidator{Validator: custom_validator.Validate}
 
+	err = v.Validate(uC)
+	if err != nil {
+		slog.Errorf(fmt.Errorf(path+".Validate, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
+	}
 	authParams := service.AuthParams{Email: uC.Email, Password: uC.Password}
 	user, err := aR.authService.GetUserByEmail(ctx.Context(), authParams)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
 			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 			return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrUserNotFound.Error())
+		}
+		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
+			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
+			return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrWrongCredetianls.Error())
 		}
 		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")

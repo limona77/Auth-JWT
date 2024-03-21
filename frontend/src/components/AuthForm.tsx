@@ -1,9 +1,7 @@
 import { useForm } from "@mantine/form";
 import { TextInput, Button, Box, PasswordInput } from "@mantine/core";
 
-import axios from "axios";
-
-import { AuthService } from "../../services/auth";
+import { fetchLogin, fetchRegister } from "../api/auth";
 const AuthForm = () => {
   const form = useForm({
     initialValues: { email: "", password: "" },
@@ -14,19 +12,6 @@ const AuthForm = () => {
     },
   });
 
-  const fetchRegister = async (email: string, password: string) => {
-    try {
-      const response = await AuthService.register(email, password);
-      localStorage.setItem("token", response.data.accessToken);
-      alert("Вы зарегистрированы!");
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        alert(err.response?.data?.message);
-      } else if (err instanceof Error) {
-        alert(err.message);
-      }
-    }
-  };
   return (
     <Box
       style={{
@@ -43,11 +28,7 @@ const AuthForm = () => {
           maxHeight: 240,
         }}
       >
-        <form
-          onSubmit={form.onSubmit(() => {
-            fetchRegister(form.values.email, form.values.password);
-          })}
-        >
+        <form>
           <TextInput
             mt="sm"
             withAsterisk
@@ -63,8 +44,23 @@ const AuthForm = () => {
             placeholder="Input placeholder"
             {...form.getInputProps("password")}
           />
-          <Button type="submit" mt="sm">
+          <Button
+            mt="sm"
+            fullWidth={true}
+            onClick={() => {
+              fetchRegister(form.values.email, form.values.password);
+            }}
+          >
             Зарегистрироваться
+          </Button>
+          <Button
+            mt="sm"
+            fullWidth={true}
+            onClick={() => {
+              fetchLogin(form.values.email, form.values.password);
+            }}
+          >
+            Войти
           </Button>
         </form>
       </Box>
