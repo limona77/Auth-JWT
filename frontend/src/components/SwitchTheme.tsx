@@ -1,30 +1,28 @@
 import {
-  useMantineColorScheme,
-  useComputedColorScheme,
   ActionIcon,
+  useComputedColorScheme,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { IconSun, IconMoon } from "@tabler/icons-react";
+import { useContext } from "react";
 
-const SwitchTheme = () => {
+import { SwitchThemeContext } from "../context";
+export const SwitchTheme = () => {
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light");
-
+  const switchThemeProps = useContext(SwitchThemeContext);
   const Switch = () => {
     setColorScheme(computedColorScheme === "light" ? "dark" : "light");
   };
   return (
     <ActionIcon
-      style={{
-        position: "absolute",
-        top: "50%",
-      }}
       onClick={Switch}
-      variant="default"
-      size="xl"
-      aria-label="Toggle color scheme"
+      variant={switchThemeProps?.variant}
+      size={switchThemeProps?.size}
     >
       {computedColorScheme === "light" ? <IconSun /> : <IconMoon />}
     </ActionIcon>
   );
 };
+
 export default SwitchTheme;

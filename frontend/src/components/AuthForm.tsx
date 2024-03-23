@@ -33,15 +33,15 @@ const AuthForm = () => {
             mt="sm"
             withAsterisk
             size="md"
-            label="Email"
-            placeholder="Email"
+            label="Почта"
+            placeholder="Введите свою почту"
             {...form.getInputProps("email")}
           />
           <PasswordInput
             size="md"
-            label="Password"
+            label="Пароль"
             withAsterisk
-            placeholder="Input placeholder"
+            placeholder="Введите свой пароль"
             {...form.getInputProps("password")}
           />
           <Button
