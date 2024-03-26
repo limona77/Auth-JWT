@@ -2,28 +2,18 @@ import "./App.css";
 
 import { MantineProvider } from "@mantine/core";
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-
-import AuthForm from "./components/AuthForm.tsx";
+import { BrowserRouter } from "react-router-dom";
 
 import "@mantine/core/styles.css";
 
-import NavBar from "./components/NavBar.tsx";
+import AppRouter from "./components/AppRouter.tsx";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: [<NavBar />, <AuthForm />],
-  },
-  {
-    path: "/demo",
-    element: <NavBar />,
-  },
-]);
 function App() {
   return (
     <MantineProvider>
-      <RouterProvider router={router} />
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
     </MantineProvider>
   );
 }

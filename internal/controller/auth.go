@@ -2,12 +2,11 @@ package controller
 
 import (
 	"auth/internal/custom-errors"
-	custom_validator "auth/internal/custom-validatot"
+	custom_validator "auth/internal/custom-validator"
 	"auth/internal/model"
 	"auth/internal/service"
 	"errors"
 	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gookit/slog"
 )
@@ -20,6 +19,7 @@ func newAuthRoutes(g fiber.Router, authService service.Auth) {
 	aR := &authRoutes{authService: authService}
 	g.Post("/register", aR.register)
 	g.Post("/login", aR.login)
+
 }
 
 type UserCredentials struct {
@@ -57,7 +57,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".CreateUser, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
-	tokens, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
+	tokens, _, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
 	if err != nil {
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
@@ -102,8 +102,10 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".Validate, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusBadRequest, err.Error())
 	}
+
 	authParams := service.AuthParams{Email: uC.Email, Password: uC.Password}
-	user, err := aR.authService.GetUserByEmail(ctx.Context(), authParams)
+
+	tokens, user, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
 			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
@@ -116,19 +118,13 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
-
-	tokens, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
-	if err != nil {
-		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
-	}
-
 	tokenModel := model.Token{
 		RefreshToken: tokens.RefreshToken,
 		UserID:       user.ID,
 	}
 	token, err := aR.authService.SaveToken(ctx.Context(), tokenModel)
 	if err != nil {
-		return err
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	ctx.Cookie(&fiber.Cookie{

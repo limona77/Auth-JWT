@@ -1,9 +1,8 @@
-import { Box } from "@mantine/core";
+import { Box, Button } from "@mantine/core";
 
 import { SwitchThemeContext } from "../context";
 
 import { SwitchTheme } from "./SwitchTheme.tsx";
-import Demo from "./Demo.tsx";
 
 export interface ISwitchThemeProps {
   size: string;
@@ -22,10 +21,12 @@ const NavBar = () => {
         alignItems: "center",
       }}
     >
-      <Demo />
       <SwitchThemeContext.Provider value={switchThemeProps}>
         <SwitchTheme />
       </SwitchThemeContext.Provider>
+      <Button variant="filled" color="rgba(242, 41, 41, 1)">
+        Выйти
+      </Button>
     </Box>
   );
 };

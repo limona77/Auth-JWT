@@ -71,6 +71,7 @@ func (uR *UserRepository) GetUserByEmail(ctx context.Context, email string) (mod
 		}
 		return model.User{}, fmt.Errorf(path+".QueryRow, error: {%w}", err)
 	}
+
 	return user, nil
 }
 

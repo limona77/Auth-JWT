@@ -1,6 +1,6 @@
-import { IUser } from "../User.ts";
+import { IUser } from "./User.ts";
 
-export interface AuthResponse {
+export interface IAuthResponse {
   accessToken: string;
   refreshToken: string;
   UserData: IUser;
