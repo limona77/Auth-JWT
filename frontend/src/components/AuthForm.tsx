@@ -1,8 +1,13 @@
 import { useForm } from "@mantine/form";
 import { TextInput, Button, Box, PasswordInput } from "@mantine/core";
 
-import { fetchLogin, fetchRegister } from "../api/auth";
+import { useAppDispatch } from "../store";
+import {
+  fetchLogin,
+  fetchRegister,
+} from "../store/slices/auth/asyncActions.ts";
 const AuthForm = () => {
+  const dispatch = useAppDispatch();
   const form = useForm({
     initialValues: { email: "", password: "" },
     validate: {
@@ -11,7 +16,6 @@ const AuthForm = () => {
         value.length < 5 ? "Длина пароля должна быть минимум 5 символов" : null,
     },
   });
-
   return (
     <Box
       style={{
@@ -48,7 +52,12 @@ const AuthForm = () => {
             mt="sm"
             fullWidth={true}
             onClick={() => {
-              fetchRegister(form.values.email, form.values.password);
+              dispatch(
+                fetchRegister({
+                  email: form.values.email,
+                  password: form.values.password,
+                }),
+              );
             }}
           >
             Зарегистрироваться
@@ -57,7 +66,12 @@ const AuthForm = () => {
             mt="sm"
             fullWidth={true}
             onClick={() => {
-              fetchLogin(form.values.email, form.values.password);
+              dispatch(
+                fetchLogin({
+                  email: form.values.email,
+                  password: form.values.password,
+                }),
+              );
             }}
           >
             Войти

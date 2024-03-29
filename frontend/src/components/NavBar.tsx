@@ -1,15 +1,8 @@
 import { Box, Button } from "@mantine/core";
 
-import { SwitchThemeContext } from "../context";
-
 import { SwitchTheme } from "./SwitchTheme.tsx";
 
-export interface ISwitchThemeProps {
-  size: string;
-  variant: string;
-}
 const NavBar = () => {
-  const switchThemeProps: ISwitchThemeProps = { size: "xl", variant: "light" };
   return (
     <Box
       style={{
@@ -21,9 +14,7 @@ const NavBar = () => {
         alignItems: "center",
       }}
     >
-      <SwitchThemeContext.Provider value={switchThemeProps}>
-        <SwitchTheme />
-      </SwitchThemeContext.Provider>
+      <SwitchTheme size={"xl"} variant={"light"} />
       <Button variant="filled" color="rgba(242, 41, 41, 1)">
         Выйти
       </Button>

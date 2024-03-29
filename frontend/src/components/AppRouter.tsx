@@ -1,14 +1,16 @@
-import { useContext } from "react";
-
 import { Route, Routes } from "react-router-dom";
 
-import { IsAuthContext } from "../context";
+import { useSelector } from "react-redux";
+
 import { routes } from "../routes";
 import ErrorAuthPage from "../pages/ErrorAuthPage.tsx";
 import AuthPage from "../pages/AuthPage.tsx";
 
+import { selectIsAuth } from "../store/slices/auth/selectors.ts";
+
 const AppRouter = () => {
-  const isAuth = useContext(IsAuthContext);
+  const { isAuth } = useSelector(selectIsAuth);
+
   return isAuth ? (
     <Routes>
       {routes.map((route) => (

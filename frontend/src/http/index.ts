@@ -7,6 +7,10 @@ export const httpInstance = axios.create({
   withCredentials: true,
 });
 
+httpInstance.interceptors.request.use((config) => {
+  config.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
+  return config;
+});
 httpInstance.interceptors.response.use(
   (res) => {
     return res;

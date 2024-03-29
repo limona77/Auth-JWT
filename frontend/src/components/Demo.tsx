@@ -7,7 +7,7 @@ interface IDemoProps {
   height: string | undefined;
   alignItems: string | undefined;
   fontSize: string | undefined;
-  children: React.ReactNode ;
+  children: React.ReactNode;
 }
 
 const Demo: FC<IDemoProps> = ({
@@ -32,6 +32,5 @@ const Demo: FC<IDemoProps> = ({
     </Box>
   );
 };
-//❌ Вы должны авторизироваться, чтобы просматривать данную страницу
-//✅ Вы вошли в демонстрационную версию
+
 export default Demo;

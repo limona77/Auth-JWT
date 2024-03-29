@@ -1,13 +1,7 @@
 import { AuthService } from "../../services/auth";
+import { IUser } from "../../models/User.ts";
 
-export const fetchRegister = async (email: string, password: string) => {
-  const response = await AuthService.register(email, password);
-  localStorage.setItem("token", response.data.accessToken);
-  alert("Вы зарегистрированы!");
-};
-
-export const fetchLogin = async (email: string, password: string) => {
-  const response = await AuthService.login(email, password);
-  localStorage.setItem("token", response.data.accessToken);
-  alert("Вы успешно вошли в свой аккаунт!");
+export const fetchGetUser = async (): Promise<IUser> => {
+  const response = await AuthService.getUser();
+  return response.data;
 };
