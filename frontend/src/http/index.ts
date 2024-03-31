@@ -17,10 +17,10 @@ httpInstance.interceptors.response.use(
   },
   (err) => {
     if (axios.isAxiosError(err)) {
-      alert(err.response?.data?.message);
+      throw err.response?.data?.message;
     } else if (err instanceof Error) {
-      alert(err.message);
+      throw err.message;
     }
-    return err;
+    throw err;
   },
 );

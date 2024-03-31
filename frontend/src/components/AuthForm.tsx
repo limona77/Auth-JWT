@@ -1,6 +1,8 @@
 import { useForm } from "@mantine/form";
 import { TextInput, Button, Box, PasswordInput } from "@mantine/core";
 
+import { useNavigate } from "react-router-dom";
+
 import { useAppDispatch } from "../store";
 import {
   fetchLogin,
@@ -8,6 +10,7 @@ import {
 } from "../store/slices/auth/asyncActions.ts";
 const AuthForm = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const form = useForm({
     initialValues: { email: "", password: "" },
     validate: {
@@ -16,6 +19,30 @@ const AuthForm = () => {
         value.length < 5 ? "Длина пароля должна быть минимум 5 символов" : null,
     },
   });
+
+  const handleLoginEvent = async () => {
+    const res = await dispatch(
+      fetchLogin({
+        email: form.values.email,
+        password: form.values.password,
+      }),
+    );
+
+    if (res.meta.requestStatus == "fulfilled") {
+      navigate("/demo");
+    }
+  };
+  const handleRegisterEvent = async () => {
+    const res = await dispatch(
+      fetchRegister({
+        email: form.values.email,
+        password: form.values.password,
+      }),
+    );
+    if (res.meta.requestStatus == "fulfilled") {
+      navigate("/demo");
+    }
+  };
   return (
     <Box
       style={{
@@ -48,32 +75,10 @@ const AuthForm = () => {
             placeholder="Введите свой пароль"
             {...form.getInputProps("password")}
           />
-          <Button
-            mt="sm"
-            fullWidth={true}
-            onClick={() => {
-              dispatch(
-                fetchRegister({
-                  email: form.values.email,
-                  password: form.values.password,
-                }),
-              );
-            }}
-          >
+          <Button mt="sm" fullWidth={true} onClick={handleRegisterEvent}>
             Зарегистрироваться
           </Button>
-          <Button
-            mt="sm"
-            fullWidth={true}
-            onClick={() => {
-              dispatch(
-                fetchLogin({
-                  email: form.values.email,
-                  password: form.values.password,
-                }),
-              );
-            }}
-          >
+          <Button mt="sm" fullWidth={true} onClick={handleLoginEvent}>
             Войти
           </Button>
         </form>
