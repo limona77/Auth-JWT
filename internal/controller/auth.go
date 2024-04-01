@@ -19,6 +19,7 @@ func newAuthRoutes(g fiber.Router, authService service.Auth) {
 	aR := &authRoutes{authService: authService}
 	g.Post("/register", aR.register)
 	g.Post("/login", aR.login)
+	g.Get("/refresh", aR.refresh)
 
 }
 
@@ -140,5 +141,57 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
+	return nil
+}
+func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
+	path := "internal.controller.auth.refresh"
+
+	refreshToken := ctx.Cookies("refreshToken")
+
+	if refreshToken == "" {
+		return wrapHttpError(ctx, fiber.StatusBadRequest, "refresh token is required")
+	}
+	c := &service.ClientService{}
+	tokenClaims, err := c.VerifyToken(refreshToken)
+	if err != nil {
+		slog.Errorf(fmt.Errorf(path+".VerifyToken, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusUnauthorized, custom_errors.ErrUserUnauthorized.Error())
+	}
+
+	tokenModel := model.Token{UserID: tokenClaims.UserID, RefreshToken: refreshToken}
+	_, err = aR.authService.GetToken(ctx.Context(), tokenModel)
+	if err != nil {
+		return err
+	}
+
+	authParams := service.AuthParams{Email: tokenClaims.Email}
+	tokens, user, err := aR.authService.GenerateTokens(ctx.Context(), authParams)
+	if err != nil {
+		if errors.Is(err, custom_errors.ErrUserNotFound) {
+			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
+			return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrUserNotFound.Error())
+		}
+		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
+			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
+			return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrWrongCredetianls.Error())
+		}
+		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
+	}
+	newRefreshTokenModel := model.Token{
+		RefreshToken: tokens.RefreshToken,
+		UserID:       user.ID,
+	}
+	token, err := aR.authService.SaveToken(ctx.Context(), newRefreshTokenModel)
+	if err != nil {
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "refreshToken",
+		Value:    token.RefreshToken,
+		MaxAge:   30 * 24 * 60 * 60 * 1000,
+		HTTPOnly: true,
+	})
 	return nil
 }

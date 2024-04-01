@@ -23,7 +23,9 @@ export const fetchRegister = createAsyncThunk<IAuthResponse, AuthParams>(
   },
 );
 export const fetchAuthMe = createAsyncThunk("auth/fetchAuthMe", async () => {
+  setTimeout(() => {}, 3000);
   const token = localStorage.getItem("token") ?? "";
   const { data } = await AuthService.getUser(token);
+
   return data;
 });

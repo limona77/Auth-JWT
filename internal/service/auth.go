@@ -19,10 +19,10 @@ type Tokens struct {
 }
 
 type TokenClaims struct {
-	Email string `json:"email"`
-	ID    int    `json:"ID"`
-	Exp   int64  `json:"exp"`
-	Key   []byte `json:"key"`
+	Email  string `json:"email"`
+	UserID int    `json:"ID"`
+	Exp    int64  `json:"exp"`
+	Key    []byte `json:"key"`
 	jwt.RegisteredClaims
 }
 
@@ -66,10 +66,10 @@ func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (T
 		return Tokens{}, model.User{}, fmt.Errorf(path+".CheckPasswordHash, error: {%w}", custom_errros.ErrWrongCredetianls)
 	}
 	claims := TokenClaims{
-		Email: user.Email,
-		ID:    user.ID,
-		Exp:   time.Now().Add(time.Second * 30).Unix(),
-		Key:   aS.SecretKeyAccess,
+		Email:  user.Email,
+		UserID: user.ID,
+		Exp:    time.Now().Add(time.Second * 30).Unix(),
+		Key:    aS.SecretKeyAccess,
 	}
 	tokenA := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	accessToken, err := tokenA.SignedString(claims.Key)
@@ -98,4 +98,14 @@ func (aS *AuthService) SaveToken(ctx context.Context, token model.Token) (model.
 		return model.Token{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)
 	}
 	return t, nil
+}
+
+func (aS *AuthService) GetToken(ctx context.Context, token model.Token) (model.Token, error) {
+	path := "internal.service.auth.RefreshToken"
+
+	modelToken, err := aS.tokenRepository.GetToken(ctx, token.UserID)
+	if err != nil {
+		return model.Token{}, fmt.Errorf(path+".RefreshToken, error: {%w}", err)
+	}
+	return modelToken, nil
 }

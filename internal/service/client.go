@@ -18,7 +18,7 @@ func NewClientService(uR repository.User) *ClientService {
 	return &ClientService{uR}
 }
 
-func (cS *ClientService) VerifyToken(token string) (string, error) {
+func (cS *ClientService) VerifyToken(token string) (TokenClaims, error) {
 	path := "internal.service.auth.ParseToken"
 
 	var tokenClaims TokenClaims
@@ -27,16 +27,16 @@ func (cS *ClientService) VerifyToken(token string) (string, error) {
 		return tokenClaims.Key, nil
 	})
 	if err != nil {
-		return tokenClaims.Email, fmt.Errorf(path+".ParseWithClaims, error: {%w}", err)
+		return tokenClaims, fmt.Errorf(path+".ParseWithClaims, error: {%w}", err)
 	}
 
 	if !t.Valid {
-		return "", fmt.Errorf(path+".Valid, error: {%w}", err)
+		return TokenClaims{}, fmt.Errorf(path+".Valid, error: {%w}", err)
 	}
 	if time.Now().Unix() > tokenClaims.Exp {
-		return "", fmt.Errorf("Token expired")
+		return TokenClaims{}, fmt.Errorf("Token expired")
 	}
-	return tokenClaims.Email, nil
+	return tokenClaims, nil
 }
 
 func (cS *ClientService) GetUserByEmail(ctx context.Context, params AuthParams) (model.User, error) {

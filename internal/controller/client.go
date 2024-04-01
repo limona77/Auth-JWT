@@ -21,12 +21,12 @@ func (aR *clientRoutes) getUser(ctx *fiber.Ctx) error {
 		return fmt.Errorf(path, "no token provided")
 	}
 	t := strings.Split(accessToken, " ")[1]
-	email, err := aR.clientService.VerifyToken(t)
+	tokenClaims, err := aR.clientService.VerifyToken(t)
 	if err != nil {
 		slog.Errorf(fmt.Errorf(path+".VerifyToken, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusUnauthorized, custom_errors.ErrUserUnauthorized.Error())
 	}
-	params := service.AuthParams{Email: email}
+	params := service.AuthParams{Email: tokenClaims.Email}
 	user, err := aR.clientService.GetUserByEmail(ctx.Context(), params)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {

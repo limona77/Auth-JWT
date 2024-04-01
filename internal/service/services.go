@@ -16,9 +16,10 @@ type Auth interface {
 	CreateUser(ctx context.Context, params AuthParams) (model.User, error)
 	GenerateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error)
 	SaveToken(ctx context.Context, token model.Token) (model.Token, error)
+	GetToken(ctx context.Context, token model.Token) (model.Token, error)
 }
 type Client interface {
-	VerifyToken(token string) (string, error)
+	VerifyToken(token string) (TokenClaims, error)
 	GetUserByEmail(ctx context.Context, params AuthParams) (model.User, error)
 }
 type Services struct {

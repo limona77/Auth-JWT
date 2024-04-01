@@ -1,10 +1,14 @@
 package repository
 
 import (
+	custom_errros "auth/internal/custom-errors"
 	"auth/internal/model"
 	"auth/pkg/postgres"
 	"context"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type TokenRepository struct {
@@ -38,4 +42,32 @@ func (tR *TokenRepository) SaveToken(ctx context.Context, token model.Token) (mo
 	}
 
 	return t, nil
+}
+
+func (tR *TokenRepository) GetToken(ctx context.Context, userId int) (model.Token, error) {
+	path := "internal.repository.token.RefreshToken"
+	sql, args, err := tR.Builder.Select("id", "refresh_token", "user_id").
+		From("public.tokens").
+		Where("user_id = ?", userId).
+		ToSql()
+	if err != nil {
+		return model.Token{}, fmt.Errorf(path+".ToSql, error: {%w}", err)
+	}
+
+	var modelToken model.Token
+
+	err = tR.Pool.QueryRow(ctx, sql, args...).Scan(&modelToken.ID, &modelToken.RefreshToken, &modelToken.UserID)
+	if err != nil {
+		if err != nil {
+			var pgErr *pgconn.PgError
+			if ok := errors.As(err, &pgErr); ok {
+				return model.Token{}, err
+			}
+			if errors.Is(err, pgx.ErrNoRows) {
+				return model.Token{}, custom_errros.ErrUserNotFound
+			}
+			return model.Token{}, fmt.Errorf(path+".QueryRow, error: {%w}", err)
+		}
+	}
+	return modelToken, nil
 }

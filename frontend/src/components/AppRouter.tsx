@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { useSelector } from "react-redux";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 import { routes } from "../routes";
 import ErrorAuthPage from "../pages/ErrorAuthPage.tsx";
@@ -19,10 +19,8 @@ const AppRouter = () => {
   const { isAuth, isLoading } = useSelector(selectIsAuth);
   const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(() => {
-      setTimeout(fetchAuthMe(), 6000);
-    });
-  }, [dispatch]);
+    dispatch(fetchAuthMe());
+  }, []);
   return isLoading ? (
     <MyLoader />
   ) : isAuth ? (
