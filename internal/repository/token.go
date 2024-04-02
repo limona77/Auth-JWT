@@ -1,7 +1,7 @@
 package repository
 
 import (
-	custom_errros "auth/internal/custom-errors"
+	"auth/internal/custom-errors"
 	"auth/internal/model"
 	"auth/pkg/postgres"
 	"context"
@@ -64,7 +64,7 @@ func (tR *TokenRepository) GetToken(ctx context.Context, userId int) (model.Toke
 				return model.Token{}, err
 			}
 			if errors.Is(err, pgx.ErrNoRows) {
-				return model.Token{}, custom_errros.ErrUserNotFound
+				return model.Token{}, custom_errors.ErrUserUnauthorized
 			}
 			return model.Token{}, fmt.Errorf(path+".QueryRow, error: {%w}", err)
 		}
