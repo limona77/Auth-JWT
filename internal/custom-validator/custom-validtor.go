@@ -28,12 +28,12 @@ func (xV *XValidator) Validate(data interface{}) error {
 func (xV *XValidator) wrapValidationError(field string, tag string, param string) error {
 	switch tag {
 	case "required":
-		return fmt.Errorf("field %s is required", field)
+		return fmt.Errorf("поле %s обязательно для заполнения", field)
 	case "email":
-		return fmt.Errorf("field %s must be a valid email address", field)
+		return fmt.Errorf("поле %s должно быть электронной почтой", field)
 	case "min":
-		return fmt.Errorf("field %s must have at least %s characters", field, param)
+		return fmt.Errorf("поле %s должно содержать как минимум %s символов", field, param)
 	default:
-		return fmt.Errorf("field %s is invalid", field)
+		return fmt.Errorf("поле %s некорректно", field)
 	}
 }

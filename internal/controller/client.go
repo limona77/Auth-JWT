@@ -5,9 +5,10 @@ import (
 	"auth/internal/service"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gookit/slog"
-	"strings"
 )
 
 type clientRoutes struct {

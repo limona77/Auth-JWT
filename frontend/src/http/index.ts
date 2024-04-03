@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import { AuthService } from "../services/auth";
+
 export const Base_URL = "http://localhost:8000/";
 
 export const httpInstance = axios.create({
@@ -15,12 +17,26 @@ httpInstance.interceptors.response.use(
   (res) => {
     return res;
   },
-  (err) => {
+  async (err) => {
+    const originalRequest = err.config;
+    originalRequest._isRetry = false;
     if (axios.isAxiosError(err)) {
+      if (
+        err.response?.status === 401 &&
+        err.config &&
+        !originalRequest._isRetry
+      ) {
+        originalRequest._isRetry = true;
+        const { data } = await AuthService.refresh();
+        localStorage.setItem("token", data.accessToken);
+        return httpInstance(originalRequest);
+      }
+      alert(err.response?.data?.message);
       throw err.response?.data?.message;
     } else if (err instanceof Error) {
       throw err.message;
     }
+
     throw err;
   },
 );

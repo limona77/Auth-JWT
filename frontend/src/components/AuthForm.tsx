@@ -1,3 +1,5 @@
+import * as path from "path";
+
 import { useForm } from "@mantine/form";
 import { TextInput, Button, Box, PasswordInput } from "@mantine/core";
 

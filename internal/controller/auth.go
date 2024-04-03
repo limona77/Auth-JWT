@@ -7,6 +7,7 @@ import (
 	"auth/internal/service"
 	"errors"
 	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gookit/slog"
 )
@@ -20,7 +21,6 @@ func newAuthRoutes(g fiber.Router, authService service.Auth) {
 	g.Post("/register", aR.register)
 	g.Post("/login", aR.login)
 	g.Get("/refresh", aR.refresh)
-
 }
 
 type UserCredentials struct {
@@ -49,7 +49,6 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	authParams := service.AuthParams{Email: uC.Email, Password: uC.Password}
 
 	tokens, user, err := aR.authService.Register(ctx.Context(), authParams)
-
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrAlreadyExists) {
 			slog.Errorf(fmt.Errorf(path+".Register, error: {%w}", err).Error())
@@ -138,13 +137,13 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 	}
 	return nil
 }
+
 func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.refresh"
 
 	refreshToken := ctx.Cookies("refreshToken")
 
 	if refreshToken == "" {
-
 		return wrapHttpError(ctx, fiber.StatusBadRequest, "refresh token is required")
 	}
 
@@ -173,7 +172,7 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 		MaxAge:   30 * 24 * 60 * 60 * 1000,
 		HTTPOnly: true,
 	})
-	resp := map[string]interface{}{"refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
+	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
 		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())

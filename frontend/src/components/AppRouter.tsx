@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { useSelector } from "react-redux";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 import { routes } from "../routes";
 import ErrorAuthPage from "../pages/ErrorAuthPage.tsx";

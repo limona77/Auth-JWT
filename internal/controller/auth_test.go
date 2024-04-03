@@ -18,8 +18,10 @@ import (
 
 func TestRegister(t *testing.T) {
 	type args struct {
-		ctx    context.Context
-		params service.AuthParams
+		ctx        context.Context
+		authParams service.AuthParams
+		tokenModel model.Token
+		tokens     service.Tokens
 	}
 	type MockBehavior func(m *mock_service.MockAuth, args args)
 
@@ -36,20 +38,30 @@ func TestRegister(t *testing.T) {
 			inputBody: `{"email":"test1@gmail.com","password":"12345"}`,
 			args: args{
 				ctx: context.Background(),
-				params: service.AuthParams{
+				authParams: service.AuthParams{
 					Email:    "test1@gmail.com",
 					Password: "12345",
 				},
-			},
-			mockBehavior: func(m *mock_service.MockAuth, args args) {
-				m.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(model.User{
-					ID:       1,
-					Email:    "test1@gmail.com",
-					Password: "",
-				}, nil)
-				m.EXPECT().GenerateTokens(gomock.Any(), gomock.Any()).Return(service.Tokens{
+				tokenModel: model.Token{
+					RefreshToken: "token",
+					UserID:       1,
+				},
+				tokens: service.Tokens{
 					AccessToken:  "token",
 					RefreshToken: "token",
+				},
+			},
+			mockBehavior: func(m *mock_service.MockAuth, args args) {
+				m.EXPECT().Register(gomock.Any(), gomock.Any()).Return(
+					args.tokens,
+					model.User{
+						ID:       1,
+						Email:    "test1@gmail.com",
+						Password: "",
+					}, nil)
+				m.EXPECT().SaveToken(gomock.Any(), gomock.Any()).Return(model.Token{
+					RefreshToken: "token",
+					UserID:       1,
 				}, nil)
 			},
 			wantStatus:      200,

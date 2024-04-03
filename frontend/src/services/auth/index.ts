@@ -25,9 +25,11 @@ export class AuthService {
     });
   }
 
-  static async getUser(token: string): Promise<AxiosResponse<IUser>> {
-    return httpInstance.get<IUser>("/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  static async getUser(): Promise<AxiosResponse<IUser>> {
+    return httpInstance.get<IUser>("/me");
+  }
+
+  static async refresh(): Promise<AxiosResponse<IAuthResponse>> {
+    return httpInstance.get<IAuthResponse>("auth/refresh");
   }
 }

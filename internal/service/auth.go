@@ -8,8 +8,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gookit/slog"
 	"time"
+
+	"github.com/gookit/slog"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -45,7 +46,8 @@ func (aS *AuthService) Register(ctx context.Context, params AuthParams) (Tokens,
 		return Tokens{}, model.User{}, fmt.Errorf(path+".HashPassword, error: {%w}", err)
 	}
 
-	user, err := aS.userRepository.CreateUser(ctx, model.User{Email: params.Email, Password: password})
+	userModel := model.User{Email: params.Email, Password: password}
+	_, err = aS.userRepository.CreateUser(ctx, userModel)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrAlreadyExists) {
 			return Tokens{}, model.User{}, custom_errors.ErrAlreadyExists
@@ -143,6 +145,7 @@ func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model
 	}
 	return tokens, user, nil
 }
+
 func (aS *AuthService) Login(ctx context.Context, params AuthParams) (Tokens, model.User, error) {
 	path := "internal.service.auth.Login"
 	user, err := aS.userRepository.GetUserByEmail(ctx, params.Email)
@@ -169,9 +172,9 @@ func (aS *AuthService) Login(ctx context.Context, params AuthParams) (Tokens, mo
 	return tokens, user, nil
 }
 
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-//eyJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsIklEIjo1OSwiZXhwIjoxNzEyMTc2MDcyLCJrZXkiOiJjMlZqY21WMFgzSmxabkpsYzJoZmEyVjUifQ.
-//mBYIbVwQ8XEDpNOhA3SMDk9AQjlL8q2H-o9hNt16IRU
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-//eyJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsIklEIjo1OSwiZXhwIjoxNzEyMTc2MTA2LCJrZXkiOiJjMlZqY21WMFgzSmxabkpsYzJoZmEyVjUifQ.
-//Qh81W6upmGAKK5FUEVVYixsKfjgez4Ym-q_AkZ4kQZs
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+// eyJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsIklEIjo1OSwiZXhwIjoxNzEyMTc2MDcyLCJrZXkiOiJjMlZqY21WMFgzSmxabkpsYzJoZmEyVjUifQ.
+// mBYIbVwQ8XEDpNOhA3SMDk9AQjlL8q2H-o9hNt16IRU
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+// eyJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsIklEIjo1OSwiZXhwIjoxNzEyMTc2MTA2LCJrZXkiOiJjMlZqY21WMFgzSmxabkpsYzJoZmEyVjUifQ.
+// Qh81W6upmGAKK5FUEVVYixsKfjgez4Ym-q_AkZ4kQZs
