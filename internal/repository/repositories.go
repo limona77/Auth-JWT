@@ -14,6 +14,7 @@ type User interface {
 type Token interface {
 	SaveToken(context.Context, model.Token) (model.Token, error)
 	GetToken(ctx context.Context, id int) (model.Token, error)
+	RemoveToken(ctx context.Context, token string) (int, error)
 }
 type Repositories struct {
 	User

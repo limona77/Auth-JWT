@@ -74,7 +74,3 @@ func (uR *UserRepository) GetUserByEmail(ctx context.Context, email string) (mod
 
 	return user, nil
 }
-
-//func (uR *UserRepository) SaveToken(ctx context.Context, token string) error {
-//	return nil
-//}

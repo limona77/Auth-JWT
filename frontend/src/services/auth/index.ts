@@ -32,4 +32,7 @@ export class AuthService {
   static async refresh(): Promise<AxiosResponse<IAuthResponse>> {
     return httpInstance.get<IAuthResponse>("auth/refresh");
   }
+  static async logout(): Promise<AxiosResponse<number>> {
+    return httpInstance.get<number>("auth/logout");
+  }
 }

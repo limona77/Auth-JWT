@@ -14,10 +14,10 @@ type AuthParams struct {
 //go:generate mockgen -source=services.go -destination=mocks/mock.go
 type Auth interface {
 	Register(ctx context.Context, params AuthParams) (Tokens, model.User, error)
-	GenerateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error)
-	SaveToken(ctx context.Context, token model.Token) (model.Token, error)
+	generateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error)
 	Refresh(ctx context.Context, token string) (Tokens, model.User, error)
 	Login(ctx context.Context, params AuthParams) (Tokens, model.User, error)
+	Logout(ctx context.Context, token string) (int, error)
 }
 type Client interface {
 	VerifyToken(token string) (TokenClaims, error)

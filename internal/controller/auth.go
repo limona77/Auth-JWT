@@ -3,7 +3,6 @@ package controller
 import (
 	"auth/internal/custom-errors"
 	custom_validator "auth/internal/custom-validator"
-	"auth/internal/model"
 	"auth/internal/service"
 	"errors"
 	"fmt"
@@ -21,6 +20,7 @@ func newAuthRoutes(g fiber.Router, authService service.Auth) {
 	g.Post("/register", aR.register)
 	g.Post("/login", aR.login)
 	g.Get("/refresh", aR.refresh)
+	g.Get("/logout", aR.logout)
 }
 
 type UserCredentials struct {
@@ -57,18 +57,10 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".Register, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
-	tokenModel := model.Token{
-		RefreshToken: tokens.RefreshToken,
-		UserID:       user.ID,
-	}
-	token, err := aR.authService.SaveToken(ctx.Context(), tokenModel)
-	if err != nil {
-		return err
-	}
 
 	ctx.Cookie(&fiber.Cookie{
 		Name:     "refreshToken",
-		Value:    token.RefreshToken,
+		Value:    tokens.RefreshToken,
 		MaxAge:   30 * 24 * 60 * 60 * 1000,
 		HTTPOnly: true,
 	})
@@ -76,7 +68,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
-		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())
+		slog.Errorf(fmt.Errorf(path+".httpResponse, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
 	return nil
@@ -113,18 +105,10 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
-	tokenModel := model.Token{
-		RefreshToken: tokens.RefreshToken,
-		UserID:       user.ID,
-	}
-	token, err := aR.authService.SaveToken(ctx.Context(), tokenModel)
-	if err != nil {
-		return wrapHttpError(ctx, fiber.StatusInternalServerError, err.Error())
-	}
 
 	ctx.Cookie(&fiber.Cookie{
 		Name:     "refreshToken",
-		Value:    token.RefreshToken,
+		Value:    tokens.RefreshToken,
 		MaxAge:   30 * 24 * 60 * 60 * 1000,
 		HTTPOnly: true,
 	})
@@ -132,7 +116,7 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
-		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())
+		slog.Errorf(fmt.Errorf(path+".httpResponse, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
 	return nil
@@ -144,7 +128,8 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 	refreshToken := ctx.Cookies("refreshToken")
 
 	if refreshToken == "" {
-		return wrapHttpError(ctx, fiber.StatusBadRequest, "refresh token is required")
+		slog.Errorf(fmt.Errorf(path+".Cookies, error: {%w}", errors.New("token is required")).Error())
+		return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrUserUnauthorized.Error())
 	}
 
 	tokens, user, err := aR.authService.Refresh(ctx.Context(), refreshToken)
@@ -157,25 +142,47 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	newRefreshTokenModel := model.Token{
-		RefreshToken: tokens.RefreshToken,
-		UserID:       user.ID,
-	}
-	token, err := aR.authService.SaveToken(ctx.Context(), newRefreshTokenModel)
-	if err != nil {
-		return wrapHttpError(ctx, fiber.StatusInternalServerError, err.Error())
-	}
-
 	ctx.Cookie(&fiber.Cookie{
 		Name:     "refreshToken",
-		Value:    token.RefreshToken,
+		Value:    tokens.RefreshToken,
 		MaxAge:   30 * 24 * 60 * 60 * 1000,
 		HTTPOnly: true,
 	})
 	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
-		slog.Errorf(fmt.Errorf(path+".JSON, error: {%w}", err).Error())
+		slog.Errorf(fmt.Errorf(path+".httpResponse, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
+	}
+	return nil
+}
+
+func (aR *authRoutes) logout(ctx *fiber.Ctx) error {
+	refreshToken := ctx.Cookies("refreshToken")
+	path := "internal.controller.auth.logout"
+	if refreshToken == "" {
+		slog.Errorf(fmt.Errorf(path+".Cookies, error: {%w}", errors.New("token is required")).Error())
+		return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrUserUnauthorized.Error())
+	}
+	userID, err := aR.authService.Logout(ctx.Context(), refreshToken)
+	if err != nil {
+		if errors.Is(err, custom_errors.ErrUserUnauthorized) {
+			slog.Errorf(fmt.Errorf(path+".Logout, error: {%w}", err).Error())
+			return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrUserUnauthorized.Error())
+		}
+		slog.Errorf(fmt.Errorf(path+".Logout, error: {%w}", err).Error())
+		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
+	}
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "refreshToken",
+		Value:    "",
+		MaxAge:   -1,
+		HTTPOnly: true,
+	})
+	resp := map[string]interface{}{"userID": userID}
+	err = httpResponse(ctx, 200, resp)
+	if err != nil {
+		slog.Errorf(fmt.Errorf(path+".httpResponse, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
 	return nil

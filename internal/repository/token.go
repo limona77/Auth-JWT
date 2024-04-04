@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type TokenRepository struct {
@@ -57,18 +56,37 @@ func (tR *TokenRepository) GetToken(ctx context.Context, userId int) (model.Toke
 
 	var modelToken model.Token
 
-	err = tR.Pool.QueryRow(ctx, sql, args...).Scan(&modelToken.ID, &modelToken.RefreshToken, &modelToken.UserID)
+	err = tR.Pool.QueryRow(ctx, sql, args...).
+		Scan(&modelToken.ID, &modelToken.RefreshToken, &modelToken.UserID)
 	if err != nil {
-		if err != nil {
-			var pgErr *pgconn.PgError
-			if ok := errors.As(err, &pgErr); ok {
-				return model.Token{}, err
-			}
-			if errors.Is(err, pgx.ErrNoRows) {
-				return model.Token{}, custom_errors.ErrUserUnauthorized
-			}
-			return model.Token{}, fmt.Errorf(path+".QueryRow, error: {%w}", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.Token{}, custom_errors.ErrUserUnauthorized
 		}
+		return model.Token{}, fmt.Errorf(path+".QueryRow, error: {%w}", err)
 	}
 	return modelToken, nil
+}
+
+func (tR *TokenRepository) RemoveToken(ctx context.Context, token string) (int, error) {
+	path := "internal.repository.token.RemoveToken"
+	sql, args, err := tR.Builder.
+		Delete("public.tokens").
+		Where("refresh_token = ?", token).
+		Suffix("RETURNING user_id").
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf(path+".ToSql, error: {%w}", err)
+	}
+
+	var userID int
+	err = tR.Pool.QueryRow(ctx, sql, args...).
+		Scan(&userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, fmt.Errorf(path+".ToSql, error: {%w}", custom_errors.ErrUserUnauthorized)
+		}
+		return 0, fmt.Errorf(path+".QueryRow, error: {%w}", err)
+	}
+
+	return userID, nil
 }

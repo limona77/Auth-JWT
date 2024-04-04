@@ -18,6 +18,7 @@ type clientRoutes struct {
 func (aR *clientRoutes) getUser(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.getUser"
 	accessToken := ctx.Get("Authorization")
+	fmt.Println("accessToken", accessToken)
 	if len([]rune(accessToken)) == 0 {
 		return fmt.Errorf(path, "no token provided")
 	}

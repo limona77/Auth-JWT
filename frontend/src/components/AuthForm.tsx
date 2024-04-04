@@ -1,5 +1,3 @@
-import * as path from "path";
-
 import { useForm } from "@mantine/form";
 import { TextInput, Button, Box, PasswordInput } from "@mantine/core";
 
@@ -17,9 +15,14 @@ const AuthForm = () => {
     initialValues: { email: "", password: "" },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
-      password: (value) =>
-        value.length < 5 ? "Длина пароля должна быть минимум 5 символов" : null,
+      password: (value) => {
+        return value.length < 5
+          ? "Длина пароля должна быть минимум 5 символов"
+          : null;
+      },
     },
+
+    validateInputOnBlur: true,
   });
 
   const handleLoginEvent = async () => {
@@ -71,10 +74,12 @@ const AuthForm = () => {
             {...form.getInputProps("email")}
           />
           <PasswordInput
+            mt="sm"
             size="md"
             label="Пароль"
             withAsterisk
             placeholder="Введите свой пароль"
+            error={form.getInputProps("password").error}
             {...form.getInputProps("password")}
           />
           <Button mt="sm" fullWidth={true} onClick={handleRegisterEvent}>

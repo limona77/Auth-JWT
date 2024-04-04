@@ -20,7 +20,7 @@ const AppRouter = () => {
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(fetchAuthMe());
-  }, []);
+  }, [dispatch]);
   return isLoading ? (
     <MyLoader />
   ) : isAuth ? (

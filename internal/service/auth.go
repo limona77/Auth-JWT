@@ -54,24 +54,29 @@ func (aS *AuthService) Register(ctx context.Context, params AuthParams) (Tokens,
 		}
 		return Tokens{}, model.User{}, fmt.Errorf(path+".CreateUser, error: {%w}", err)
 	}
-	tokens, user, err := aS.GenerateTokens(ctx, params)
+	tokens, user, err := aS.generateTokens(ctx, params)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
-			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 			return Tokens{}, model.User{}, custom_errors.ErrUserNotFound
 		}
 		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
-			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 			return Tokens{}, model.User{}, custom_errors.ErrWrongCredetianls
 		}
-		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
-		return Tokens{}, model.User{}, err
+		return Tokens{}, model.User{}, fmt.Errorf(path+".generateTokens, error: {%w}", err)
+	}
+	tokenModel := model.Token{
+		RefreshToken: tokens.RefreshToken,
+		UserID:       user.ID,
+	}
+	_, err = aS.tokenRepository.SaveToken(ctx, tokenModel)
+	if err != nil {
+		return Tokens{}, model.User{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)
 	}
 	return tokens, user, nil
 }
 
-func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error) {
-	path := "internal.service.auth.GenerateTokens"
+func (aS *AuthService) generateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error) {
+	path := "internal.service.auth.generateTokens"
 
 	user, err := aS.userRepository.GetUserByEmail(ctx, params.Email)
 	if err != nil {
@@ -81,7 +86,7 @@ func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (T
 	claims := TokenClaims{
 		Email:  user.Email,
 		UserID: user.ID,
-		Exp:    time.Now().Add(time.Second * 30).Unix(),
+		Exp:    time.Now().Add(time.Second * 15).Unix(),
 		Key:    aS.SecretKeyAccess,
 	}
 	tokenA := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -90,7 +95,7 @@ func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (T
 		return Tokens{}, model.User{}, fmt.Errorf(path+".tokenA.SignedString, error: {%w}", err)
 	}
 
-	claims.Exp = time.Now().Add(time.Hour * 30).Unix()
+	claims.Exp = time.Now().Add(time.Second * 30).Unix()
 	claims.Key = aS.SecretKeyRefresh
 	tokenR := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	refreshToken, err := tokenR.SignedString(claims.Key)
@@ -101,16 +106,6 @@ func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (T
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, user, nil
-}
-
-func (aS *AuthService) SaveToken(ctx context.Context, token model.Token) (model.Token, error) {
-	path := "internal.service.auth.SaveToken"
-
-	t, err := aS.tokenRepository.SaveToken(ctx, token)
-	if err != nil {
-		return model.Token{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)
-	}
-	return t, nil
 }
 
 func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model.User, error) {
@@ -130,18 +125,23 @@ func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model
 	}
 
 	authParams := AuthParams{Email: tokenClaims.Email}
-	tokens, user, err := aS.GenerateTokens(ctx, authParams)
+	tokens, user, err := aS.generateTokens(ctx, authParams)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
-			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 			return Tokens{}, model.User{}, custom_errors.ErrUserNotFound
 		}
 		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
-			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 			return Tokens{}, model.User{}, custom_errors.ErrWrongCredetianls
 		}
-		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
-		return Tokens{}, model.User{}, err
+		return Tokens{}, model.User{}, fmt.Errorf(path+".generateTokens, error: {%w}", err)
+	}
+	tokenModel := model.Token{
+		RefreshToken: tokens.RefreshToken,
+		UserID:       user.ID,
+	}
+	_, err = aS.tokenRepository.SaveToken(ctx, tokenModel)
+	if err != nil {
+		return Tokens{}, model.User{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)
 	}
 	return tokens, user, nil
 }
@@ -156,25 +156,33 @@ func (aS *AuthService) Login(ctx context.Context, params AuthParams) (Tokens, mo
 	if !ok {
 		return Tokens{}, model.User{}, fmt.Errorf(path+".CheckPasswordHash, error: {%w}", custom_errors.ErrWrongCredetianls)
 	}
-	tokens, user, err := aS.GenerateTokens(ctx, params)
+	tokens, user, err := aS.generateTokens(ctx, params)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
-			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 			return Tokens{}, model.User{}, custom_errors.ErrUserNotFound
 		}
 		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
-			slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 			return Tokens{}, model.User{}, custom_errors.ErrWrongCredetianls
 		}
-		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
-		return Tokens{}, model.User{}, err
+		return Tokens{}, model.User{}, fmt.Errorf(path+".generateTokens, error: {%w}", err)
+	}
+	tokenModel := model.Token{
+		RefreshToken: tokens.RefreshToken,
+		UserID:       user.ID,
+	}
+	_, err = aS.tokenRepository.SaveToken(ctx, tokenModel)
+	if err != nil {
+		return Tokens{}, model.User{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)
 	}
 	return tokens, user, nil
 }
 
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-// eyJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsIklEIjo1OSwiZXhwIjoxNzEyMTc2MDcyLCJrZXkiOiJjMlZqY21WMFgzSmxabkpsYzJoZmEyVjUifQ.
-// mBYIbVwQ8XEDpNOhA3SMDk9AQjlL8q2H-o9hNt16IRU
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-// eyJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsIklEIjo1OSwiZXhwIjoxNzEyMTc2MTA2LCJrZXkiOiJjMlZqY21WMFgzSmxabkpsYzJoZmEyVjUifQ.
-// Qh81W6upmGAKK5FUEVVYixsKfjgez4Ym-q_AkZ4kQZs
+func (aS *AuthService) Logout(ctx context.Context, token string) (int, error) {
+	path := "internal.service.auth.Logout"
+	userID, err := aS.tokenRepository.RemoveToken(ctx, token)
+	if err != nil {
+		return 0, fmt.Errorf(path+".RemoveToken, error: {%w}", err)
+	}
+
+	return userID, nil
+}

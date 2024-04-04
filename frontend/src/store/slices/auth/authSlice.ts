@@ -1,7 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { AuthState } from "./types.ts";
-import { fetchAuthMe, fetchLogin, fetchRegister } from "./asyncActions.ts";
+import {
+  fetchAuthMe,
+  fetchLogin,
+  fetchLogout,
+  fetchRegister,
+} from "./asyncActions.ts";
 
 const initialState: AuthState = {
   isAuth: false,
@@ -44,6 +49,17 @@ export const authSlice = createSlice({
     });
     builder.addCase(fetchRegister.rejected, (state) => {
       state.isAuth = false;
+      state.isLoading = false;
+    });
+    builder.addCase(fetchLogout.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(fetchLogout.fulfilled, (state) => {
+      state.isAuth = false;
+      state.isLoading = false;
+    });
+    builder.addCase(fetchLogout.rejected, (state) => {
+      state.isAuth = true;
       state.isLoading = false;
     });
   },

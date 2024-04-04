@@ -13,25 +13,21 @@ httpInstance.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
   return config;
 });
+let refresh = false;
 httpInstance.interceptors.response.use(
   (res) => {
     return res;
   },
   async (err) => {
     const originalRequest = err.config;
-    originalRequest._isRetry = false;
+
     if (axios.isAxiosError(err)) {
-      if (
-        err.response?.status === 401 &&
-        err.config &&
-        !originalRequest._isRetry
-      ) {
-        originalRequest._isRetry = true;
+      if (err.response?.status === 401 && err.config && !refresh) {
+        refresh = true;
         const { data } = await AuthService.refresh();
         localStorage.setItem("token", data.accessToken);
-        return httpInstance(originalRequest);
+        return httpInstance.request(originalRequest);
       }
-      alert(err.response?.data?.message);
       throw err.response?.data?.message;
     } else if (err instanceof Error) {
       throw err.message;
