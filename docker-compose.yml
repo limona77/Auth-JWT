@@ -1,8 +1,17 @@
 version: "3.8"
 services:
-  back:
+  front:
+    container_name: front
     build:
-      context: backend
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - back
+  back:
+    container_name: back
+    build:
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     env_file:
@@ -11,8 +20,9 @@ services:
       - postgres
   postgres:
     image: postgres
+    container_name: postgres
     ports:
-      - "7000:5432"
+      - "5432:5432"
     env_file:
       - .env
     volumes:

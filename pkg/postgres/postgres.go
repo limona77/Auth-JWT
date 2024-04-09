@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/gookit/slog"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -25,7 +24,7 @@ func New(url string) *DB {
 	var err error
 	db.Pool, err = pgxpool.New(context.Background(), url)
 	if err != nil {
-		slog.Fatal("can't connect to Postgres", err)
+		panic("can't connect to Postgres")
 	}
 	return db
 }
