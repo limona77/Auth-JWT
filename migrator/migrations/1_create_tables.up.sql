@@ -1,9 +1,9 @@
-CREATE TABLE Users (
+CREATE TABLE users (
     id serial PRIMARY KEY UNIQUE,
     email varchar(255) NOT NULL UNIQUE,
     password varchar(100) NOT NULL
 );
-CREATE TABLE Tokens
+CREATE TABLE tokens
 (
     id serial PRIMARY KEY UNIQUE ,
     refresh_token varchar NOT NULL ,

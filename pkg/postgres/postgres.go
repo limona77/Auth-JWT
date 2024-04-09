@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -23,6 +23,12 @@ func New(url string) *DB {
 	}
 	var err error
 	db.Pool, err = pgxpool.New(context.Background(), url)
+
+	if err != nil {
+		panic("can't connect to Postgres")
+	}
+	_, err = pgx.Connect(context.Background(), url)
+	fmt.Println(url)
 	if err != nil {
 		panic("can't connect to Postgres")
 	}

@@ -11,7 +11,7 @@ services:
   back:
     container_name: back
     build:
-      dockerfile: Dockerfile
+      context: .
     ports:
       - "8000:8000"
     env_file:
@@ -19,10 +19,10 @@ services:
     depends_on:
       - postgres
   postgres:
-    image: postgres
     container_name: postgres
+    image: postgres:14-alpine
     ports:
-      - "5432:5432"
+      - "5433:5432"
     env_file:
       - .env
     volumes:

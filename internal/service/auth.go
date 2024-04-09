@@ -54,7 +54,7 @@ func (aS *AuthService) Register(ctx context.Context, params AuthParams) (Tokens,
 		}
 		return Tokens{}, model.User{}, fmt.Errorf(path+".CreateUser, error: {%w}", err)
 	}
-	tokens, user, err := aS.generateTokens(ctx, params)
+	tokens, user, err := aS.GenerateTokens(ctx, params)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
 			return Tokens{}, model.User{}, custom_errors.ErrUserNotFound
@@ -62,7 +62,7 @@ func (aS *AuthService) Register(ctx context.Context, params AuthParams) (Tokens,
 		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
 			return Tokens{}, model.User{}, custom_errors.ErrWrongCredetianls
 		}
-		return Tokens{}, model.User{}, fmt.Errorf(path+".generateTokens, error: {%w}", err)
+		return Tokens{}, model.User{}, fmt.Errorf(path+".GenerateTokens, error: {%w}", err)
 	}
 	tokenModel := model.Token{
 		RefreshToken: tokens.RefreshToken,
@@ -75,8 +75,8 @@ func (aS *AuthService) Register(ctx context.Context, params AuthParams) (Tokens,
 	return tokens, user, nil
 }
 
-func (aS *AuthService) generateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error) {
-	path := "internal.service.auth.generateTokens"
+func (aS *AuthService) GenerateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error) {
+	path := "internal.service.auth.GenerateTokens"
 
 	user, err := aS.userRepository.GetUserByEmail(ctx, params.Email)
 	if err != nil {
@@ -125,7 +125,7 @@ func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model
 	}
 
 	authParams := AuthParams{Email: tokenClaims.Email}
-	tokens, user, err := aS.generateTokens(ctx, authParams)
+	tokens, user, err := aS.GenerateTokens(ctx, authParams)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
 			return Tokens{}, model.User{}, custom_errors.ErrUserNotFound
@@ -133,7 +133,7 @@ func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model
 		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
 			return Tokens{}, model.User{}, custom_errors.ErrWrongCredetianls
 		}
-		return Tokens{}, model.User{}, fmt.Errorf(path+".generateTokens, error: {%w}", err)
+		return Tokens{}, model.User{}, fmt.Errorf(path+".GenerateTokens, error: {%w}", err)
 	}
 	tokenModel := model.Token{
 		RefreshToken: tokens.RefreshToken,
@@ -156,7 +156,7 @@ func (aS *AuthService) Login(ctx context.Context, params AuthParams) (Tokens, mo
 	if !ok {
 		return Tokens{}, model.User{}, fmt.Errorf(path+".CheckPasswordHash, error: {%w}", custom_errors.ErrWrongCredetianls)
 	}
-	tokens, user, err := aS.generateTokens(ctx, params)
+	tokens, user, err := aS.GenerateTokens(ctx, params)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserNotFound) {
 			return Tokens{}, model.User{}, custom_errors.ErrUserNotFound
@@ -164,7 +164,7 @@ func (aS *AuthService) Login(ctx context.Context, params AuthParams) (Tokens, mo
 		if errors.Is(err, custom_errors.ErrWrongCredetianls) {
 			return Tokens{}, model.User{}, custom_errors.ErrWrongCredetianls
 		}
-		return Tokens{}, model.User{}, fmt.Errorf(path+".generateTokens, error: {%w}", err)
+		return Tokens{}, model.User{}, fmt.Errorf(path+".GenerateTokens, error: {%w}", err)
 	}
 	tokenModel := model.Token{
 		RefreshToken: tokens.RefreshToken,
