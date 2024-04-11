@@ -126,7 +126,6 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.refresh"
 
 	refreshToken := ctx.Cookies("refreshToken")
-
 	if refreshToken == "" {
 		slog.Errorf(fmt.Errorf(path+".Cookies, error: {%w}", errors.New("token is required")).Error())
 		return wrapHttpError(ctx, fiber.StatusBadRequest, custom_errors.ErrUserUnauthorized.Error())

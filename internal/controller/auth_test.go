@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -23,6 +24,7 @@ func TestRegister(t *testing.T) {
 		authParams service.AuthParams
 		tokenModel model.Token
 		tokens     service.Tokens
+		user       model.User
 	}
 	type MockBehavior func(m *mock_service.MockAuth, args args)
 
@@ -51,15 +53,17 @@ func TestRegister(t *testing.T) {
 					AccessToken:  "token",
 					RefreshToken: "token",
 				},
+				user: model.User{
+					ID:       1,
+					Email:    "test1@gmail.com",
+					Password: "",
+				},
 			},
 			mockBehavior: func(m *mock_service.MockAuth, args args) {
 				m.EXPECT().Register(gomock.Any(), gomock.Any()).Return(
 					args.tokens,
-					model.User{
-						ID:       1,
-						Email:    "test1@gmail.com",
-						Password: "",
-					}, nil)
+					args.user,
+					nil)
 			},
 			wantStatus:      200,
 			wantRequestBody: `{"accessToken":"token","refreshToken":"token","user":{"ID":1,"Email":"test1@gmail.com","Password":""}}`,
@@ -142,6 +146,7 @@ func TestLogin(t *testing.T) {
 		authParams service.AuthParams
 		tokenModel model.Token
 		tokens     service.Tokens
+		user       model.User
 	}
 
 	type MockBehavior func(m *mock_service.MockAuth, args args)
@@ -171,15 +176,16 @@ func TestLogin(t *testing.T) {
 					AccessToken:  "token",
 					RefreshToken: "token",
 				},
+				user: model.User{
+					ID:       1,
+					Email:    "test1@gmail.com",
+					Password: "",
+				},
 			},
 			mockBehavior: func(m *mock_service.MockAuth, args args) {
 				m.EXPECT().Login(gomock.Any(), gomock.Any()).Return(
 					args.tokens,
-					model.User{
-						ID:       1,
-						Email:    "test1@gmail.com",
-						Password: "",
-					}, nil)
+					args.user, nil)
 			},
 			wantStatus:      200,
 			wantRequestBody: `{"accessToken":"token","refreshToken":"token","user":{"ID":1,"Email":"test1@gmail.com","Password":""}}`,
@@ -273,6 +279,122 @@ func TestLogin(t *testing.T) {
 			// init request
 			req := httptest.NewRequest("POST", "/auth/login", strings.NewReader(tc.inputBody))
 			req.Header.Set("Content-Type", "application/json")
+			resp, err := f.Test(req)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			// check response
+			if resp != nil {
+				body, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Println("Error reading response body:", err)
+				}
+
+				assert.Equal(t, tc.wantStatus, resp.StatusCode)
+				assert.Equal(t, tc.wantRequestBody, string(body))
+			}
+		})
+	}
+}
+
+func TestRefresh(t *testing.T) {
+	type args struct {
+		ctx        context.Context
+		tokenModel model.Token
+		tokens     service.Tokens
+		user       model.User
+	}
+	type MockBehavior func(m *mock_service.MockAuth, args args)
+
+	testTable := []struct {
+		name            string
+		args            args
+		mockBehavior    MockBehavior
+		wantStatus      int
+		wantRequestBody string
+	}{
+		{
+			name: "OK",
+			args: args{
+				ctx: context.Background(),
+				tokenModel: model.Token{
+					RefreshToken: "token",
+					UserID:       1,
+				},
+				tokens: service.Tokens{
+					AccessToken:  "token",
+					RefreshToken: "token",
+				},
+				user: model.User{
+					ID:       1,
+					Email:    "test1@gmail.com",
+					Password: "",
+				}},
+			mockBehavior: func(m *mock_service.MockAuth, args args) {
+				m.EXPECT().Refresh(gomock.Any(), gomock.Any()).
+					Return(
+						args.tokens,
+						args.user,
+						nil)
+			},
+			wantStatus:      200,
+			wantRequestBody: `{"accessToken":"token","refreshToken":"token","user":{"ID":1,"Email":"test1@gmail.com","Password":""}}`,
+		},
+		{
+			name:            "Empty refresh token",
+			args:            args{},
+			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			wantStatus:      400,
+			wantRequestBody: `{"message":"пользователь не авторизован"}`,
+		},
+		{
+			name: "Unauthorized refresh token",
+			args: args{},
+			mockBehavior: func(m *mock_service.MockAuth, args args) {
+				m.EXPECT().Refresh(gomock.Any(), gomock.Any()).
+					Return(
+						args.tokens,
+						args.user,
+						custom_errors.ErrUserUnauthorized)
+			},
+			wantStatus:      401,
+			wantRequestBody: `{"message":"пользователь не авторизован"}`,
+		},
+	}
+
+	for _, tc := range testTable {
+
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			// init service mock
+			auth := mock_service.NewMockAuth(c)
+			tc.mockBehavior(auth, tc.args)
+
+			// init service
+			services := &service.Services{Auth: auth}
+
+			// init test server
+			f := fiber.New()
+			g := f.Group("/auth")
+			newAuthRoutes(g, services.Auth)
+
+			// init request
+			req := httptest.NewRequest("GET", "/auth/refresh", nil)
+			req.Header.Set("Content-Type", "application/json")
+			if tc.name != "Empty refresh token" {
+				//set refresh token
+				cookie := &http.Cookie{
+					Name:     "refreshToken",
+					Value:    "token",
+					MaxAge:   30 * 24 * 60 * 60 * 1000,
+					HttpOnly: true,
+				}
+				req.AddCookie(cookie)
+			}
+
 			resp, err := f.Test(req)
 			if err != nil {
 				fmt.Println(err)
