@@ -97,15 +97,24 @@
 
 >git clone https://github.com/limona77/Auth-JWT
 2. Собери мигратор
-> docker build -t migrator .\migrator
+```bash 
+  docker build -t migrator .\migrator
+ ``` 
 3. запусти postgresql 
-> docker-compose up postgres
+```bash 
+  docker-compose up postgres 
+``` 
 4. запусти миграции
-> Пример моей ссылки для postgres: postgres://postgres:postgres@postgres:5432/auth?sslmode=disable
->>docker run  --network host migrator -path=/migrations/  -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/auth?sslmode=disable {up/down 2}
+```bash 
+  Пример моей ссылки для postgres: postgres://postgres:postgres@postgres:5432/auth?sslmode=disable
+```
+```bash 
+docker run  --network host migrator -path=/migrations/  -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/auth?sslmode=disable {up/down 2}
+```
 5. запусти backend и frontend
-> docker-compose up
-
+```bash
+  docker-compose up
+```
 ## 🌐 API документация
 
 ### Регистрация
@@ -157,10 +166,10 @@
   ```
 
 ### Обновление токенов
-- `POST auth/refresh`
+- `GET auth/refresh`
 - **Запрос**: body не нужно
 - **Заголовок**:
-- >Authorization=Bearer accessToken
+- *Authorization=Bearer accessToken*
 - **Ответ**:
   ```json
   {
@@ -174,7 +183,7 @@
   }
   ```
 ### Выход из аккаунта
-- `POST /auth/logout`
+- `GET /auth/logout`
 - **Запрос**: body не нужно
 - **Cookie**: должен храниться refreshToken
 - **Ответ**:
@@ -183,9 +192,9 @@
   ```
 
 ### Получить свой id
-- `POST /me`
+- `GET /me`
 - **Запрос**: body не нужно
-- >Authorization=Bearer accessToken
+- *Authorization=Bearer accessToken*
 
 - **Ответ**:
   ```json
