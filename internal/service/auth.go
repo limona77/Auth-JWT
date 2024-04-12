@@ -143,6 +143,7 @@ func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model
 	if err != nil {
 		return Tokens{}, model.User{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)
 	}
+	user.Password = ""
 	return tokens, user, nil
 }
 
@@ -170,6 +171,7 @@ func (aS *AuthService) Login(ctx context.Context, params AuthParams) (Tokens, mo
 		RefreshToken: tokens.RefreshToken,
 		UserID:       user.ID,
 	}
+	user.Password = ""
 	_, err = aS.tokenRepository.SaveToken(ctx, tokenModel)
 	if err != nil {
 		return Tokens{}, model.User{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)

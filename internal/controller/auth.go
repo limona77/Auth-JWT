@@ -82,7 +82,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		MaxAge:   30 * 24 * 60 * 60 * 1000,
 		HTTPOnly: true,
 	})
-
+	user.Password = ""
 	resp := authResponse{User: user, RefreshToken: tokens.RefreshToken, AccessToken: tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
