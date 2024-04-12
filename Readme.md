@@ -193,7 +193,7 @@ docker run  --network host migrator -path=/migrations/  -database postgres://${P
   {"userID": 3}
   ```
 
-### Получить свой id
+### Получить свои данные
 - `GET /me`
 - **Запрос**: body не нужно
 - *Authorization=Bearer accessToken*
