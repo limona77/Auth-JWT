@@ -4,12 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func httpResponse(ctx *fiber.Ctx, code int, params map[string]interface{}) error {
-	response := fiber.Map{}
-	for k, v := range params {
-		response[k] = v
-	}
-	err := ctx.Status(code).JSON(response)
+func httpResponse(ctx *fiber.Ctx, code int, params interface{}) error {
+	err := ctx.Status(code).JSON(params)
 	if err != nil {
 		return err
 	}

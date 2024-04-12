@@ -2,6 +2,7 @@ package controller
 
 import (
 	custom_errors "auth/internal/custom-errors"
+	"auth/internal/model"
 	"auth/internal/service"
 	"errors"
 	"fmt"
@@ -14,7 +15,21 @@ import (
 type clientRoutes struct {
 	clientService service.Client
 }
+type clientResponse struct {
+	User model.User `json:"user"`
+}
 
+// @Summary Get user
+// @Security ApiKeyAuth
+// @Tags client
+// @Description get user
+// @Accept json
+// @Produce json
+// @ID get-user
+// @Success 200 {object} clientResponse "ok"
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /me [get]
 func (aR *clientRoutes) getUser(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.getUser"
 	accessToken := ctx.Get("Authorization")
@@ -42,7 +57,7 @@ func (aR *clientRoutes) getUser(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".GetUserByEmail, error: {%w}", err).Error())
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")
 	}
-	resp := map[string]interface{}{"user": user}
+	resp := clientResponse{User: user}
 	err = httpResponse(ctx, fiber.StatusOK, resp)
 	if err != nil {
 		return wrapHttpError(ctx, fiber.StatusInternalServerError, "internal server error")

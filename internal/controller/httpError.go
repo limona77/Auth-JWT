@@ -14,6 +14,5 @@ func wrapHttpError(ctx *fiber.Ctx, code int, message string) error {
 		code = e.Code
 		return ctx.Status(code).SendString(message)
 	}
-
 	return httpResponse(ctx, code, fiber.Map{"message": message})
 }

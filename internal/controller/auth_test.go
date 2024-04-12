@@ -66,7 +66,7 @@ func TestRegister(t *testing.T) {
 					nil)
 			},
 			wantStatus:      200,
-			wantRequestBody: `{"accessToken":"token","refreshToken":"token","user":{"ID":1,"Email":"test1@gmail.com","Password":""}}`,
+			wantRequestBody: `{"user":{"ID":1,"Email":"test1@gmail.com","Password":""},"refreshToken":"token","accessToken":"token"}`,
 		},
 		{
 			name:            "field Email must have at least 8 characters",
@@ -188,7 +188,7 @@ func TestLogin(t *testing.T) {
 					args.user, nil)
 			},
 			wantStatus:      200,
-			wantRequestBody: `{"accessToken":"token","refreshToken":"token","user":{"ID":1,"Email":"test1@gmail.com","Password":""}}`,
+			wantRequestBody: `{"user":{"ID":1,"Email":"test1@gmail.com","Password":""},"refreshToken":"token","accessToken":"token"}`,
 		},
 		{
 			name:      "wrong password",
@@ -330,7 +330,8 @@ func TestRefresh(t *testing.T) {
 					ID:       1,
 					Email:    "test1@gmail.com",
 					Password: "",
-				}},
+				},
+			},
 			mockBehavior: func(m *mock_service.MockAuth, args args) {
 				m.EXPECT().Refresh(gomock.Any(), gomock.Any()).
 					Return(
@@ -339,7 +340,7 @@ func TestRefresh(t *testing.T) {
 						nil)
 			},
 			wantStatus:      200,
-			wantRequestBody: `{"accessToken":"token","refreshToken":"token","user":{"ID":1,"Email":"test1@gmail.com","Password":""}}`,
+			wantRequestBody: `{"user":{"ID":1,"Email":"test1@gmail.com","Password":""},"refreshToken":"token","accessToken":"token"}`,
 		},
 		{
 			name:            "Empty refresh token",
@@ -364,7 +365,6 @@ func TestRefresh(t *testing.T) {
 	}
 
 	for _, tc := range testTable {
-
 		t.Run(tc.name, func(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
@@ -385,7 +385,7 @@ func TestRefresh(t *testing.T) {
 			req := httptest.NewRequest("GET", "/auth/refresh", nil)
 			req.Header.Set("Content-Type", "application/json")
 			if tc.name != "Empty refresh token" {
-				//set refresh token
+				// set refresh token
 				cookie := &http.Cookie{
 					Name:     "refreshToken",
 					Value:    "token",

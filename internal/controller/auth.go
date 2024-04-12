@@ -3,6 +3,7 @@ package controller
 import (
 	"auth/internal/custom-errors"
 	custom_validator "auth/internal/custom-validator"
+	"auth/internal/model"
 	"auth/internal/service"
 	"errors"
 	"fmt"
@@ -28,6 +29,23 @@ type UserCredentials struct {
 	Password string `json:"password" validate:"required,min=5"`
 }
 
+type authResponse struct {
+	User         model.User `json:"user"`
+	RefreshToken string     `json:"refreshToken"`
+	AccessToken  string     `json:"accessToken"`
+}
+
+// @Summary Register
+// @Tags auth
+// @Description user registration
+// @Accept json
+// @Produce json
+// @ID register
+// @Param input body UserCredentials true "credentials"
+// @Success 200 {object} authResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /auth/register [post]
 func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.register"
 
@@ -65,7 +83,7 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 		HTTPOnly: true,
 	})
 
-	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
+	resp := authResponse{User: user, RefreshToken: tokens.RefreshToken, AccessToken: tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
 		slog.Errorf(fmt.Errorf(path+".httpResponse, error: {%w}", err).Error())
@@ -74,9 +92,19 @@ func (aR *authRoutes) register(ctx *fiber.Ctx) error {
 	return nil
 }
 
+// @Summary Login
+// @Tags auth
+// @Description user login
+// @Accept json
+// @Produce json
+// @ID login
+// @Param input body UserCredentials true "credentials"
+// @Success 200 {object} authResponse "ok"
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /auth/login [post]
 func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.login"
-
 	var uC UserCredentials
 	err := ctx.BodyParser(&uC)
 	if err != nil {
@@ -113,7 +141,7 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 		HTTPOnly: true,
 	})
 
-	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
+	resp := authResponse{User: user, RefreshToken: tokens.RefreshToken, AccessToken: tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
 		slog.Errorf(fmt.Errorf(path+".httpResponse, error: {%w}", err).Error())
@@ -122,6 +150,16 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 	return nil
 }
 
+// @Summary Refresh
+// @Tags auth
+// @Description user refresh
+// @Accept json
+// @Produce json
+// @ID refresh
+// @Success 200 {object} authResponse "ok"
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /auth/refresh [get]
 func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.refresh"
 
@@ -147,7 +185,7 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 		MaxAge:   30 * 24 * 60 * 60 * 1000,
 		HTTPOnly: true,
 	})
-	resp := map[string]interface{}{"user": user, "refreshToken": tokens.RefreshToken, "accessToken": tokens.AccessToken}
+	resp := authResponse{User: user, RefreshToken: tokens.RefreshToken, AccessToken: tokens.AccessToken}
 	err = httpResponse(ctx, 200, resp)
 	if err != nil {
 		slog.Errorf(fmt.Errorf(path+".httpResponse, error: {%w}", err).Error())
@@ -156,6 +194,17 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 	return nil
 }
 
+// @Summary Logout
+// @Tags auth
+// @Security JWT
+// @Description user logout
+// @Accept json
+// @Produce json
+// @ID logout
+// @Success 200 {object} int "ok"
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /auth/logout [get]
 func (aR *authRoutes) logout(ctx *fiber.Ctx) error {
 	refreshToken := ctx.Cookies("refreshToken")
 	path := "internal.controller.auth.logout"
