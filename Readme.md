@@ -200,5 +200,11 @@ docker run  --network host migrator -path=/migrations/  -database postgres://${P
 
 - **Ответ**:
   ```json
-  {"userID": 3}
+  {
+    "user": {
+        "ID": 3,
+        "Email": "user1@gmail.com",
+        "Password": ""
+    }
+  }
   ```
