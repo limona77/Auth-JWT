@@ -13,6 +13,6 @@ func NewRouter(app *fiber.App, services *service.Services) {
 	auth := app.Group("/auth")
 	newAuthRoutes(auth, services.Auth)
 	uR := &clientRoutes{clientService: services.Client}
-	app.Get("/me", uR.getUser)
+	app.Get("/me", uR.authMe)
 	app.Get("/swagger/*", swagger.HandlerDefault)
 }

@@ -3,6 +3,9 @@ CREATE TABLE users (
     email varchar(255) NOT NULL UNIQUE,
     password varchar(100) NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_email ON users (email);
+
 CREATE TABLE tokens
 (
     id serial PRIMARY KEY UNIQUE ,

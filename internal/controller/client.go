@@ -19,10 +19,10 @@ type clientResponse struct {
 	User model.User `json:"user"`
 }
 
-// @Summary Get user
-// @Security ApiKeyAuth
+// @Summary AuthMe
+// @Security JWT
 // @Tags client
-// @Description get user
+// @Description check auth
 // @Accept json
 // @Produce json
 // @ID get-user
@@ -30,7 +30,7 @@ type clientResponse struct {
 // @Failure 400 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /me [get]
-func (aR *clientRoutes) getUser(ctx *fiber.Ctx) error {
+func (aR *clientRoutes) authMe(ctx *fiber.Ctx) error {
 	path := "internal.controller.auth.getUser"
 	accessToken := ctx.Get("Authorization")
 	fmt.Println("accessToken", accessToken)

@@ -28,11 +28,11 @@ httpInstance.interceptors.response.use(
         localStorage.setItem("token", data.accessToken);
         return httpInstance.request(originalRequest);
       }
+      alert(err.response?.data?.message)
       throw err.response?.data?.message;
     } else if (err instanceof Error) {
       throw err.message;
     }
-
     throw err;
   },
 );

@@ -13,7 +13,7 @@
       </a>
       <br>Go
     </td>
-     <td align="center" width="130" height="90">
+    <td align="center" width="130" height="90">
       <a href="#">
         <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" width="70" alt="Postgresql" />
       </a>
@@ -116,6 +116,11 @@ docker run  --network host migrator -path=/migrations/  -database postgres://${P
 5. запусти backend и frontend
 ```bash
   docker-compose up
+```
+6. чтобы посмотреть документацию api через swagger
+  перейди по таком адресу
+```bash
+  http://127.0.0.1:8000/swagger/
 ```
 ## 🌐 API документация
 

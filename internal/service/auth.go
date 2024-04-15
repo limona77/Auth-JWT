@@ -112,10 +112,11 @@ func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model
 	path := "internal.service.auth.RefreshToken"
 	c := &ClientService{}
 	tokenClaims, err := c.VerifyToken(token)
-	if err != nil {
+	if !errors.Is(err, custom_errors.ErrTokenExpired) {
 		slog.Errorf(fmt.Errorf(path+".VerifyToken, error: {%w}", err).Error())
-		return Tokens{}, model.User{}, err
+		return Tokens{}, model.User{}, custom_errors.ErrUserUnauthorized
 	}
+	fmt.Println(tokenClaims, err)
 	_, err = aS.tokenRepository.GetToken(ctx, tokenClaims.UserID)
 	if err != nil {
 		if errors.Is(err, custom_errors.ErrUserUnauthorized) {
@@ -139,6 +140,7 @@ func (aS *AuthService) Refresh(ctx context.Context, token string) (Tokens, model
 		RefreshToken: tokens.RefreshToken,
 		UserID:       user.ID,
 	}
+
 	_, err = aS.tokenRepository.SaveToken(ctx, tokenModel)
 	if err != nil {
 		return Tokens{}, model.User{}, fmt.Errorf(path+".SaveToken, error: {%w}", err)

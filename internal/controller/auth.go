@@ -151,6 +151,7 @@ func (aR *authRoutes) login(ctx *fiber.Ctx) error {
 }
 
 // @Summary Refresh
+// @Security Cookie
 // @Tags auth
 // @Description user refresh
 // @Accept json
@@ -178,7 +179,6 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 		slog.Errorf(fmt.Errorf(path+".Refresh, error: {%w}", err).Error())
 		return err
 	}
-
 	ctx.Cookie(&fiber.Cookie{
 		Name:     "refreshToken",
 		Value:    tokens.RefreshToken,
@@ -195,8 +195,8 @@ func (aR *authRoutes) refresh(ctx *fiber.Ctx) error {
 }
 
 // @Summary Logout
+// @Security Cookie
 // @Tags auth
-// @Security JWT
 // @Description user logout
 // @Accept json
 // @Produce json

@@ -25,7 +25,7 @@ export class AuthService {
     });
   }
 
-  static async getUser(): Promise<AxiosResponse<IUser>> {
+  static async authMe(): Promise<AxiosResponse<IUser>> {
     return httpInstance.get<IUser>("/me");
   }
 

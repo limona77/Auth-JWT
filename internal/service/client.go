@@ -1,6 +1,7 @@
 package service
 
 import (
+	custom_errors "auth/internal/custom-errors"
 	"auth/internal/model"
 	"auth/internal/repository"
 	"context"
@@ -26,16 +27,18 @@ func (cS *ClientService) VerifyToken(token string) (TokenClaims, error) {
 	t, err := jwt.ParseWithClaims(token, &tokenClaims, func(token *jwt.Token) (interface{}, error) {
 		return tokenClaims.Key, nil
 	})
+
 	if err != nil {
-		return tokenClaims, fmt.Errorf(path+".ParseWithClaims, error: {%w}", err)
+		return TokenClaims{}, fmt.Errorf(path+".ParseWithClaims, error: {%w}", err)
 	}
 
 	if !t.Valid {
-		return TokenClaims{}, fmt.Errorf(path+".Valid, error: {%w}", err)
+		return tokenClaims, fmt.Errorf(path+".Valid, error: {%w}", err)
 	}
 	if time.Now().Unix() > tokenClaims.Exp {
-		return TokenClaims{}, fmt.Errorf("Token expired")
+		return tokenClaims, custom_errors.ErrTokenExpired
 	}
+
 	return tokenClaims, nil
 }
 

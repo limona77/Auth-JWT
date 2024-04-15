@@ -16,6 +16,12 @@ const configPath = "config/config.yaml"
 // @in                          header
 // @name                        Authorization
 // @description					JWT token
+
+// @securityDefinitions.apikey  Cookie
+// @in                          header
+// @name                        refreshToken
+// @description					Refresh token
+
 func main() {
 	app.Run(configPath)
 }
