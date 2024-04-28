@@ -1,8 +1,6 @@
 package config
 
 import (
-	"path"
-
 	"github.com/gookit/slog"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
@@ -10,12 +8,12 @@ import (
 
 type (
 	Config struct {
-		HTTP `yaml:"http"`
+		HTTP
 		PG
 		JWT
 	}
 	HTTP struct {
-		Port string `yaml:"port"`
+		Port string `env:"HTTP_PORT"`
 	}
 	PG struct {
 		URL string ` env:"PG_URL_LOCALHOST"`
@@ -26,15 +24,11 @@ type (
 	}
 )
 
-func NewConfig(configPath string) *Config {
+func NewConfig() *Config {
 	cfg := &Config{}
 	err := godotenv.Load()
 	if err != nil {
 		slog.Fatal("can't load env %w", err)
-	}
-	err = cleanenv.ReadConfig(path.Join("./", configPath), cfg)
-	if err != nil {
-		slog.Fatal("error reading config file: %w", err)
 	}
 	err = cleanenv.ReadEnv(cfg)
 	if err != nil {

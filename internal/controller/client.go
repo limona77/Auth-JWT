@@ -13,7 +13,7 @@ import (
 )
 
 type clientRoutes struct {
-	clientService service.Client
+	clientService service.IClient
 }
 type clientResponse struct {
 	User model.User `json:"user"`

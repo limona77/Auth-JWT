@@ -12,10 +12,10 @@ import (
 )
 
 type ClientService struct {
-	userRepository repository.User
+	userRepository repository.IUser
 }
 
-func NewClientService(uR repository.User) *ClientService {
+func NewClientService(uR repository.IUser) *ClientService {
 	return &ClientService{uR}
 }
 
@@ -27,7 +27,6 @@ func (cS *ClientService) VerifyToken(token string) (TokenClaims, error) {
 	t, err := jwt.ParseWithClaims(token, &tokenClaims, func(token *jwt.Token) (interface{}, error) {
 		return tokenClaims.Key, nil
 	})
-
 	if err != nil {
 		return TokenClaims{}, fmt.Errorf(path+".ParseWithClaims, error: {%w}", err)
 	}

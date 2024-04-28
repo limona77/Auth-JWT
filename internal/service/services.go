@@ -12,20 +12,20 @@ type AuthParams struct {
 }
 
 //go:generate mockgen -source=services.go -destination=mocks/mock.go
-type Auth interface {
+type IAuth interface {
 	Register(ctx context.Context, params AuthParams) (Tokens, model.User, error)
 	GenerateTokens(ctx context.Context, params AuthParams) (Tokens, model.User, error)
 	Refresh(ctx context.Context, token string) (Tokens, model.User, error)
 	Login(ctx context.Context, params AuthParams) (Tokens, model.User, error)
 	Logout(ctx context.Context, token string) (int, error)
 }
-type Client interface {
+type IClient interface {
 	VerifyToken(token string) (TokenClaims, error)
 	GetUserByEmail(ctx context.Context, params AuthParams) (model.User, error)
 }
 type Services struct {
-	Auth
-	Client
+	IAuth
+	IClient
 }
 
 type ServicesDeps struct {
@@ -36,11 +36,11 @@ type ServicesDeps struct {
 
 func NewServices(deps ServicesDeps) *Services {
 	return &Services{
-		Auth: NewAuthService(
-			deps.Repository.User,
-			deps.Repository.Token,
+		IAuth: NewAuthService(
+			deps.Repository.IUser,
+			deps.Repository.IToken,
 			deps.SecretKeyAccess,
 			deps.SecretKeyRefresh),
-		Client: NewClientService(deps.Repository.User),
+		IClient: NewClientService(deps.Repository.IUser),
 	}
 }

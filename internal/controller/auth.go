@@ -13,10 +13,10 @@ import (
 )
 
 type authRoutes struct {
-	authService service.Auth
+	authService service.IAuth
 }
 
-func newAuthRoutes(g fiber.Router, authService service.Auth) {
+func newAuthRoutes(g fiber.Router, authService service.IAuth) {
 	aR := &authRoutes{authService: authService}
 	g.Post("/register", aR.register)
 	g.Post("/login", aR.login)

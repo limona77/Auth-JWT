@@ -12,7 +12,7 @@ const DemoPage = () => {
         alignItems={"center"}
         fontSize={"40px"}
       >
-        ✅ Вы вошли в демонстрационную версию
+        ✅ Вы авторизованы
       </Demo>
       ,
     </>

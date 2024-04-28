@@ -20,11 +20,11 @@ const (
 	WriteTimeout = 3 * time.Second
 )
 
-func Run(configPath string) {
+func Run() {
 	slogger.SetLogger()
 
 	slog.Info("init config")
-	cfg := config.NewConfig(configPath)
+	cfg := config.NewConfig()
 	slog.Info("config ok")
 
 	slog.Info("connecting to postgres")

@@ -26,7 +26,7 @@ func TestRegister(t *testing.T) {
 		tokens     service.Tokens
 		user       model.User
 	}
-	type MockBehavior func(m *mock_service.MockAuth, args args)
+	type MockBehavior func(m *mock_service.MockIAuth, args args)
 
 	testTable := []struct {
 		name            string
@@ -59,7 +59,7 @@ func TestRegister(t *testing.T) {
 					Password: "",
 				},
 			},
-			mockBehavior: func(m *mock_service.MockAuth, args args) {
+			mockBehavior: func(m *mock_service.MockIAuth, args args) {
 				m.EXPECT().Register(gomock.Any(), gomock.Any()).Return(
 					args.tokens,
 					args.user,
@@ -72,7 +72,7 @@ func TestRegister(t *testing.T) {
 			name:            "field Email must have at least 8 characters",
 			inputBody:       `{"email":"t4@g.c","password":"123455"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Email должно содержать как минимум 8 символов"}`,
 		},
@@ -80,7 +80,7 @@ func TestRegister(t *testing.T) {
 			name:            "field Password must have at least 5 characters",
 			inputBody:       `{"email":"test1@gmail.com","password":"1"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Password должно содержать как минимум 5 символов"}`,
 		},
@@ -88,7 +88,7 @@ func TestRegister(t *testing.T) {
 			name:            "field Password is required",
 			inputBody:       `{"email":"test1@gmail.com"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Password обязательно для заполнения"}`,
 		},
@@ -96,7 +96,7 @@ func TestRegister(t *testing.T) {
 			name:            "field Email is required",
 			inputBody:       `{"password":"12345"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Email обязательно для заполнения"}`,
 		},
@@ -107,16 +107,16 @@ func TestRegister(t *testing.T) {
 			defer c.Finish()
 
 			// init service mock
-			auth := mock_service.NewMockAuth(c)
+			auth := mock_service.NewMockIAuth(c)
 			tc.mockBehavior(auth, tc.args)
 
 			// init service
-			services := &service.Services{Auth: auth}
+			services := &service.Services{IAuth: auth}
 
 			// init test server
 			f := fiber.New()
 			g := f.Group("/auth")
-			newAuthRoutes(g, services.Auth)
+			newAuthRoutes(g, services.IAuth)
 
 			// init request
 			req := httptest.NewRequest("POST", "/auth/register", strings.NewReader(tc.inputBody))
@@ -149,7 +149,7 @@ func TestLogin(t *testing.T) {
 		user       model.User
 	}
 
-	type MockBehavior func(m *mock_service.MockAuth, args args)
+	type MockBehavior func(m *mock_service.MockIAuth, args args)
 
 	testTable := []struct {
 		name            string
@@ -182,7 +182,7 @@ func TestLogin(t *testing.T) {
 					Password: "",
 				},
 			},
-			mockBehavior: func(m *mock_service.MockAuth, args args) {
+			mockBehavior: func(m *mock_service.MockIAuth, args args) {
 				m.EXPECT().Login(gomock.Any(), gomock.Any()).Return(
 					args.tokens,
 					args.user, nil)
@@ -200,7 +200,7 @@ func TestLogin(t *testing.T) {
 					Password: "4214214",
 				},
 			},
-			mockBehavior: func(m *mock_service.MockAuth, args args) {
+			mockBehavior: func(m *mock_service.MockIAuth, args args) {
 				m.EXPECT().Login(gomock.Any(), gomock.Any()).Return(
 					args.tokens, model.User{}, custom_errors.ErrWrongCredetianls)
 			},
@@ -217,7 +217,7 @@ func TestLogin(t *testing.T) {
 					Password: "12345",
 				},
 			},
-			mockBehavior: func(m *mock_service.MockAuth, args args) {
+			mockBehavior: func(m *mock_service.MockIAuth, args args) {
 				m.EXPECT().Login(gomock.Any(), gomock.Any()).Return(
 					args.tokens,
 					model.User{}, custom_errors.ErrUserNotFound)
@@ -229,7 +229,7 @@ func TestLogin(t *testing.T) {
 			name:            "field Email must have at least 8 characters",
 			inputBody:       `{"email":"t4@g.c","password":"123455"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Email должно содержать как минимум 8 символов"}`,
 		},
@@ -237,7 +237,7 @@ func TestLogin(t *testing.T) {
 			name:            "field Password must have at least 5 characters",
 			inputBody:       `{"email":"test1@gmail.com","password":"1"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Password должно содержать как минимум 5 символов"}`,
 		},
@@ -245,7 +245,7 @@ func TestLogin(t *testing.T) {
 			name:            "field Password is required",
 			inputBody:       `{"email":"test1@gmail.com"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Password обязательно для заполнения"}`,
 		},
@@ -253,7 +253,7 @@ func TestLogin(t *testing.T) {
 			name:            "field Email is required",
 			inputBody:       `{"password":"12345"}`,
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"поле Email обязательно для заполнения"}`,
 		},
@@ -265,16 +265,16 @@ func TestLogin(t *testing.T) {
 			defer c.Finish()
 
 			// init service mock
-			auth := mock_service.NewMockAuth(c)
+			auth := mock_service.NewMockIAuth(c)
 			tc.mockBehavior(auth, tc.args)
 
 			// init service
-			services := &service.Services{Auth: auth}
+			services := &service.Services{IAuth: auth}
 
 			// init test server
 			f := fiber.New()
 			g := f.Group("/auth")
-			newAuthRoutes(g, services.Auth)
+			newAuthRoutes(g, services.IAuth)
 
 			// init request
 			req := httptest.NewRequest("POST", "/auth/login", strings.NewReader(tc.inputBody))
@@ -305,7 +305,7 @@ func TestRefresh(t *testing.T) {
 		tokens     service.Tokens
 		user       model.User
 	}
-	type MockBehavior func(m *mock_service.MockAuth, args args)
+	type MockBehavior func(m *mock_service.MockIAuth, args args)
 
 	testTable := []struct {
 		name            string
@@ -332,7 +332,7 @@ func TestRefresh(t *testing.T) {
 					Password: "",
 				},
 			},
-			mockBehavior: func(m *mock_service.MockAuth, args args) {
+			mockBehavior: func(m *mock_service.MockIAuth, args args) {
 				m.EXPECT().Refresh(gomock.Any(), gomock.Any()).
 					Return(
 						args.tokens,
@@ -345,14 +345,14 @@ func TestRefresh(t *testing.T) {
 		{
 			name:            "Empty refresh token",
 			args:            args{},
-			mockBehavior:    func(m *mock_service.MockAuth, args args) {},
+			mockBehavior:    func(m *mock_service.MockIAuth, args args) {},
 			wantStatus:      400,
 			wantRequestBody: `{"message":"пользователь не авторизован"}`,
 		},
 		{
 			name: "Unauthorized refresh token",
 			args: args{},
-			mockBehavior: func(m *mock_service.MockAuth, args args) {
+			mockBehavior: func(m *mock_service.MockIAuth, args args) {
 				m.EXPECT().Refresh(gomock.Any(), gomock.Any()).
 					Return(
 						args.tokens,
@@ -370,16 +370,16 @@ func TestRefresh(t *testing.T) {
 			defer c.Finish()
 
 			// init service mock
-			auth := mock_service.NewMockAuth(c)
+			auth := mock_service.NewMockIAuth(c)
 			tc.mockBehavior(auth, tc.args)
 
 			// init service
-			services := &service.Services{Auth: auth}
+			services := &service.Services{IAuth: auth}
 
 			// init test server
 			f := fiber.New()
 			g := f.Group("/auth")
-			newAuthRoutes(g, services.Auth)
+			newAuthRoutes(g, services.IAuth)
 
 			// init request
 			req := httptest.NewRequest("GET", "/auth/refresh", nil)

@@ -4,8 +4,6 @@ import (
 	"auth/internal/app"
 )
 
-const configPath = "config/config.yaml"
-
 // @title Auth-JWT
 // @version 1.0
 // @description Auth-JWT
@@ -23,5 +21,5 @@ const configPath = "config/config.yaml"
 // @description					Refresh token
 
 func main() {
-	app.Run(configPath)
+	app.Run()
 }

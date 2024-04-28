@@ -29,13 +29,13 @@ type TokenClaims struct {
 }
 
 type AuthService struct {
-	userRepository   repository.User
-	tokenRepository  repository.Token
+	userRepository   repository.IUser
+	tokenRepository  repository.IToken
 	SecretKeyAccess  []byte
 	SecretKeyRefresh []byte
 }
 
-func NewAuthService(uR repository.User, tR repository.Token, secretKeyAccess, secretKeyRefresh []byte) *AuthService {
+func NewAuthService(uR repository.IUser, tR repository.IToken, secretKeyAccess, secretKeyRefresh []byte) *AuthService {
 	return &AuthService{uR, tR, secretKeyAccess, secretKeyRefresh}
 }
 

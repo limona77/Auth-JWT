@@ -4,7 +4,7 @@ linters:
   disable-all: true
   enable:
     - whitespace
-    - goconst
+#    - goconst
     - gochecknoinits
     - gocheckcompilerdirectives
     - containedctx
@@ -16,6 +16,9 @@ linters:
     - govet
     - errcheck
     - lll
+    - gocheckcompilerdirectives
+    - gocritic
+    - ireturn
 linters-settings:
   lll:
     line-length: 120

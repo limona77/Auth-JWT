@@ -6,19 +6,19 @@ import (
 	"context"
 )
 
-type User interface {
+type IUser interface {
 	CreateUser(context.Context, model.User) (model.User, error)
 	GetUserByEmail(context.Context, string) (model.User, error)
 }
 
-type Token interface {
+type IToken interface {
 	SaveToken(context.Context, model.Token) (model.Token, error)
 	GetToken(ctx context.Context, id int) (model.Token, error)
 	RemoveToken(ctx context.Context, token string) (int, error)
 }
 type Repositories struct {
-	User
-	Token
+	IUser
+	IToken
 }
 
 func NewRepositories(db *postgres.DB) *Repositories {
