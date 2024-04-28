@@ -4,7 +4,7 @@ linters:
   disable-all: true
   enable:
     - whitespace
-#    - goconst
+    - goconst
     - gochecknoinits
     - gocheckcompilerdirectives
     - containedctx
