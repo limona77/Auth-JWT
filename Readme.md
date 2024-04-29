@@ -175,8 +175,7 @@ docker run  --network host migrator -path=/migrations/  -database postgres://${P
 ### Обновление токенов
 - `GET auth/refresh`
 - **Запрос**: body не нужно
-- **Заголовок**:
-- *Authorization=Bearer accessToken*
+- **Cookie**: должен храниться refreshToken
 - **Ответ**:
   ```json
   {
